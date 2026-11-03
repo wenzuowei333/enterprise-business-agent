@@ -75,13 +75,22 @@ def main():
         results.append({'scenario':'read_only_and_out_of_scope','visible_cases':4,'west_case_status':404,'buttons_disabled':True})
         sign_in('demo_east',4)
         expect(page.locator('#result')).to_contain_text('尚无诊断结果')
+        # Hold the case-list request until logout completes. Its late 401 must
+        # not reject an uncaught click handler or overwrite the new identity.
+        pending=[]
+        page.route('**/api/cases',lambda route:pending.append(route))
         page.locator('.case-button').first.click()
         expect(page.locator('#diagnose')).to_be_enabled()
         page.click('#logout')
         expect(page.locator('#who')).to_have_text('尚未登录')
+        assert len(pending)==1
+        with page.expect_response(lambda r:r.url.endswith('/api/cases') and r.status==401):
+            pending[0].continue_()
+        page.unroute('**/api/cases')
         assert page.locator('.case-button').count()==0
         expect(page.locator('#result')).to_contain_text('尚无诊断结果')
-        results.append({'scenario':'identity_switch_and_logout','previous_case_cache_cleared':True})
+        expect(page.locator('#notice')).to_contain_text('已退出')
+        results.append({'scenario':'identity_switch_and_logout','previous_case_cache_cleared':True,'late_case_request_after_logout':401})
         page.set_viewport_size({'width':390,'height':844})
         sign_in('demo_admin',6)
         page.locator('.case-button').first.click()

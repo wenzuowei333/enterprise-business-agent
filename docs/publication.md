@@ -7,7 +7,7 @@
 - 自动验收：https://github.com/wenzuowei333/enterprise-business-agent/actions/workflows/ci.yml
 - 作者主页：https://github.com/wenzuowei333
 
-本版保留经过脱敏验收的业务切片、合成数据、Mock Provider、截图和实际录屏。发布整理仅修改文档及 CI 执行环境报告，未增加业务能力；完整文件增量见 `source-provenance-phase7.json`。旧阶段五/六验收与来源清单为历史快照，不能将其时间和范围当成新执行记录。
+本版保留经过脱敏验收的业务切片、合成数据、Mock Provider、截图和实际录屏。发布整理修改文档及 CI 执行环境报告；远程验收另修复案件选择请求在退出后迟到的前端竞态，并以确定性浏览器用例复验，未增加业务能力；完整文件增量见 `source-provenance-phase7.json`。旧阶段五/六验收与来源清单为历史快照，不能将其时间和范围当成新执行记录。
 
 GitHub Actions 固定使用与锁定 Playwright 兼容的 Ubuntu 24.04；从检出开始安装锁定依赖、构建演示容器、检查隔离网络、执行新卷初始化/重复种子/重建、后端回归及浏览器场景；商品项目另执行前端测试及类型检查。每次结果以对应运行的结论与 `acceptance-summary` 附件为准，未使用固定成功徽章或提前宣称通过。只上传过滤 JSON 摘要，不上传原始日志文件、业务附件或运行数据库。
 
