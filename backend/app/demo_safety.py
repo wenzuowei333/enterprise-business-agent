@@ -14,7 +14,7 @@ def ensure_demo_database(url, expected_name, root):
     elif parsed.drivername == "postgresql+psycopg":
         if (parsed.host not in {"127.0.0.1", "localhost", "postgres"}
             or parsed.database != expected_name or parsed.username != "portfolio_demo"
-            or parsed.port not in {5432, 25432, 25433}):
+            or parsed.port not in {5432, 25434, 25435}):
             raise ValueError("Database must point to the dedicated local portfolio demo service")
         if any(key in parsed.query for key in ("host", "hostaddr", "service", "servicefile", "port", "dbname")):
             raise ValueError("Database query target overrides are forbidden")

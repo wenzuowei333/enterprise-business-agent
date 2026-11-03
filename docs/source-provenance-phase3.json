@@ -1,0 +1,120 @@
+{
+  "source_commit": "a33686b5b0d3bc9e2d2eb4d85b76b8346afea5be",
+  "comparison": "Python AST without line/column attributes; compares symbol body and decorators, not module imports or runtime dependencies.",
+  "unchanged_symbols": 8,
+  "adapted_symbols": 2,
+  "symbols": [
+    {
+      "source_commit": "a33686b5b0d3bc9e2d2eb4d85b76b8346afea5be",
+      "source_file": "exception_task_service.py",
+      "symbol": "utcnow",
+      "line": 65,
+      "source_sha256": "5dbce6f4e9edfce5e57c71b5dec010d195b939c183828ad8d07d2e3416fdadf1",
+      "target_file": "backend/app/services/source_task_functions.py",
+      "target_line": 19,
+      "ast_identical": true,
+      "target_ast_sha256": "35c6ae0760de2667bfe1104fbcf6c12b9ec969a421a0baf0e98f7493c25fabf2"
+    },
+    {
+      "source_commit": "a33686b5b0d3bc9e2d2eb4d85b76b8346afea5be",
+      "source_file": "exception_task_service.py",
+      "symbol": "ExceptionRuntimePolicy",
+      "line": 69,
+      "source_sha256": "a5c26ca976973a9f17ed6b97ef3d27c80e89cc095c430d97437c383042a2ee95",
+      "target_file": "backend/app/services/source_task_functions.py",
+      "target_line": 23,
+      "ast_identical": true,
+      "target_ast_sha256": "1b0ed6623f6aedcbd2149eafa4c6bfd70b5c060b5a6dcfb61f93e30e5a7dcdd2"
+    },
+    {
+      "source_commit": "a33686b5b0d3bc9e2d2eb4d85b76b8346afea5be",
+      "source_file": "exception_task_service.py",
+      "symbol": "load_exception_runtime_policy",
+      "line": 85,
+      "source_sha256": "bc746fa99c08723a35350f92ef27b37cbd1cb226cc8c83e742af9194b7b347c3",
+      "target_file": "backend/app/services/source_task_functions.py",
+      "target_line": 39,
+      "ast_identical": true,
+      "target_ast_sha256": "07045a66963b2928d8eeda9f88d2752b5837e5fbcfbdc6cc9d85d3432b245135"
+    },
+    {
+      "source_commit": "a33686b5b0d3bc9e2d2eb4d85b76b8346afea5be",
+      "source_file": "exception_task_service.py",
+      "symbol": "claim_diagnosis_job",
+      "line": 394,
+      "source_sha256": "a2efdc4d7fcdc117bffd69f9f4dc8d1f08fd2369a0ebadc4088ac0cba7d14e2a",
+      "target_file": "backend/app/services/source_task_functions.py",
+      "target_line": 72,
+      "ast_identical": false,
+      "target_ast_sha256": "7d91579de76ef0c89068e80d527745828905bd5500b2c79dea9db88c918466aa",
+      "adaptation": "Allow shortened demo lease and add job_claimed event; preserve admission/row locks and claim generation."
+    },
+    {
+      "source_commit": "a33686b5b0d3bc9e2d2eb4d85b76b8346afea5be",
+      "source_file": "exception_task_service.py",
+      "symbol": "_lock_owned_diagnosis_context",
+      "line": 792,
+      "source_sha256": "08a05d4994844e4894b22ec265643f5e5f5e86b3d1f992dd7fd27de13bdac16a",
+      "target_file": "backend/app/services/source_task_functions.py",
+      "target_line": 154,
+      "ast_identical": false,
+      "target_ast_sha256": "5091d38da7eefe8f4fa84b362346b4b997e8f2436d62a4ff86ea87b4a2c2bed9",
+      "adaptation": "Require explicit non-null lease generation before ownership locks."
+    },
+    {
+      "source_commit": "a33686b5b0d3bc9e2d2eb4d85b76b8346afea5be",
+      "source_file": "exception_task_service.py",
+      "symbol": "_obsolete_diagnosis_detail",
+      "line": 827,
+      "source_sha256": "b52a54970a5629d642e0c4129416e78d5b8a3328ae884626a625916a927bc43f",
+      "target_file": "backend/app/services/source_task_functions.py",
+      "target_line": 191,
+      "ast_identical": true,
+      "target_ast_sha256": "2e6a4acd0f4aef3ce09db0fa819a53c1a825bbd1b19c822732e134b90119b43d"
+    },
+    {
+      "source_commit": "a33686b5b0d3bc9e2d2eb4d85b76b8346afea5be",
+      "source_file": "exception_task_service.py",
+      "symbol": "_notification_recipients",
+      "line": 1358,
+      "source_sha256": "fc9c05cf4cc50ce5250bddc2245184407d5b7e83b59644d20c573330f12e1843",
+      "target_file": "backend/app/services/source_task_functions.py",
+      "target_line": 215,
+      "ast_identical": true,
+      "target_ast_sha256": "034df8be1581ca59151710e857cf77e3f3056236f1f512e319436a541ae786ee"
+    },
+    {
+      "source_commit": "a33686b5b0d3bc9e2d2eb4d85b76b8346afea5be",
+      "source_file": "exception_task_service.py",
+      "symbol": "_store_diagnosis",
+      "line": 1366,
+      "source_sha256": "92e642801ab26622781079ce8d5e32155f6f5a2778bdc5d93936e56677a1f5db",
+      "target_file": "backend/app/services/source_task_functions.py",
+      "target_line": 223,
+      "ast_identical": true,
+      "target_ast_sha256": "cefb290e64ed1ee8cfdad8856666d9577a908bc8ceffeee03286cc16f6d8354c"
+    },
+    {
+      "source_commit": "a33686b5b0d3bc9e2d2eb4d85b76b8346afea5be",
+      "source_file": "hermes_ai_service.py",
+      "symbol": "HermesCallMetadata",
+      "line": 79,
+      "source_sha256": "7f7dbefecbe5b1ed66606b47687a96bf8e789a09b0645af7a704feae8b6a5ee2",
+      "target_file": "backend/app/services/provider_contract.py",
+      "target_line": 6,
+      "ast_identical": true,
+      "target_ast_sha256": "8474094a2b4c8403ea18e87c6e454680434f0dfe2bfa2d83b5c290072f5e89ea"
+    },
+    {
+      "source_commit": "a33686b5b0d3bc9e2d2eb4d85b76b8346afea5be",
+      "source_file": "hermes_ai_service.py",
+      "symbol": "HermesStructuredDiagnosis",
+      "line": 98,
+      "source_sha256": "86aaedc305755f3bf6fb79302b3ef8a17b42ebd09378c718c43d6c8999be68cb",
+      "target_file": "backend/app/services/provider_contract.py",
+      "target_line": 25,
+      "ast_identical": true,
+      "target_ast_sha256": "89982b863dbb885e486132de2de315adff3594fc0fab56d5e8595a1f2fbaaf05"
+    }
+  ]
+}

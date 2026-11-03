@@ -34,8 +34,6 @@ def main():
         assert sum(c.metadata_json['warehouse_name'] == '演示东仓' for c in cases) == 4
         assert sum(c.metadata_json['warehouse_name'] == '演示西仓' for c in cases) == 2
         assert db.scalar(select(func.count()).select_from(m.User)) == 3
-        assert db.scalar(select(func.count()).select_from(m.ExceptionDiagnosisJob)) == 0
-        assert db.scalar(select(func.count()).select_from(m.ExceptionDiagnosis)) == 0
         for user in db.scalars(select(m.User)):
             assert PasswordHasher().verify(user.password_hash, 'LocalDemo-2026!')
         evidence = db.scalar(select(m.ExceptionEvidence).order_by(m.ExceptionEvidence.id)).data_json
@@ -63,7 +61,7 @@ def main():
                 row.pop('password_hash', None)  # random salt is intentionally not a fixture constant
             normalized[table.name] = rows
         digest = hashlib.sha256(json.dumps(normalized, sort_keys=True, default=str, ensure_ascii=False).encode()).hexdigest()
-    print(json.dumps({'status':'passed','scope':'phase2_schema_and_synthetic_data_only','tables':18,
+    print(json.dumps({'status':'passed','scope':'synthetic_fixture_and_schema_check','tables':19,
                       'snapshots':12,'cases':6,'mock_contract_rejects_unknown_reference':True,
                       'normalized_data_sha256':digest}))
 

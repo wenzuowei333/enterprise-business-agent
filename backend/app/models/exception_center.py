@@ -109,6 +109,8 @@ class ExceptionDiagnosisJob(Base, TimestampMixin):
         ForeignKey("users.id", ondelete="SET NULL"), index=True
     )
     error_message: Mapped[str | None] = mapped_column(Text)
+    # New showcase field: the explicitly selected Mock scenario, not production data.
+    demo_scenario: Mapped[str] = mapped_column(String(40), nullable=False, default="success", server_default="success")
 
 
 class ExceptionDiagnosis(Base, TimestampMixin):

@@ -1,4 +1,4 @@
-name: portfolio-inventory-demo
+name: portfolio-inventory-stage3
 services:
   postgres:
     image: postgres:16-alpine
@@ -7,7 +7,7 @@ services:
       POSTGRES_USER: portfolio_demo
       POSTGRES_PASSWORD: local-demo-only
     ports:
-      - "127.0.0.1:25432:5432"
+      - "127.0.0.1:25434:5432"
     volumes:
       - demo_postgres:/var/lib/postgresql/data
     healthcheck:
@@ -15,6 +15,53 @@ services:
       interval: 2s
       timeout: 3s
       retries: 30
+  test-postgres:
+    profiles: ["checks"]
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: inventory_demo
+      POSTGRES_USER: portfolio_demo
+      POSTGRES_PASSWORD: local-demo-only
+    ports:
+      - "127.0.0.1:25435:5432"
+    tmpfs:
+      - /var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U portfolio_demo -d inventory_demo"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+  api:
+    profiles: ["app"]
+    image: portfolio-inventory-showcase:stage3
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    environment:
+      DATABASE_URL: postgresql+psycopg://portfolio_demo:local-demo-only@postgres:5432/inventory_demo
+    command: ["sh", "-c", "alembic upgrade head && python -m demo.seed && uvicorn app.main:app --host 0.0.0.0 --port 8000"]
+    ports:
+      - "127.0.0.1:18130:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=3)"]
+      interval: 2s
+      timeout: 3s
+      retries: 60
+  worker:
+    profiles: ["app"]
+    image: portfolio-inventory-worker:stage3
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    environment:
+      DATABASE_URL: postgresql+psycopg://portfolio_demo:local-demo-only@postgres:5432/inventory_demo
+    command: ["python", "-m", "app.tasks.exception_ai_worker", "--worker-id", "demo-worker"]
+    depends_on:
+      api:
+        condition: service_healthy
   seed:
     profiles: ["tools"]
     build:

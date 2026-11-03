@@ -64,6 +64,10 @@ def main():
     engine = create_engine(settings.database_url)
     hasher = PasswordHasher()
     with Session(engine) as db, db.begin():
+        # Once used, initialization must not reset a live demonstration's workflow state.
+        if db.scalar(select(func.count()).select_from(m.ExceptionDiagnosisJob)):
+            print(json.dumps({"synthetic":True,"already_initialized":True,"workflow_preserved":True}))
+            return
         for i, code in enumerate(["demo_admin", "demo_analyst", "demo_viewer"], 1):
             upsert(db, m.Role, i, role_code=code, role_name=f"演示角色 {i}", is_system_role=True,
                    created_at=BASE_TIME, updated_at=BASE_TIME)

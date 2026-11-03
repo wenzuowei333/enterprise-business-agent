@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>库存异常诊断 · 演示工作台</title><link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <header class="masthead"><div><div class="eyebrow">AI WORKFLOW / INVENTORY</div><h1>让每条诊断都有依据</h1><p>库存异常的证据诊断与可靠任务执行</p></div><div class="badge">合成数据 · Mock 模型</div></header>
+  <main>
+    <section class="identity panel" aria-label="演示账号">
+      <form id="login-form"><label>演示身份<select id="account"><option value="demo_admin">管理员 · 全部案件</option><option value="demo_east">东仓分析员 · 东仓案件</option><option value="demo_viewer">东仓观察员 · 只读</option></select></label><label>本地演示密码<input id="password" type="password" value="LocalDemo-2026!" autocomplete="current-password"></label><button id="login" type="submit">登录 / 切换身份</button></form>
+      <div class="session"><span id="who">尚未登录</span><button id="logout" class="secondary" disabled>退出</button></div>
+    </section>
+    <div id="notice" role="status" aria-live="polite">选择演示身份，查看对应范围的库存异常。</div>
+    <div class="workspace">
+      <aside class="panel"><div class="section-head"><h2>01 / 异常案件</h2><span id="count">0</span></div><p class="muted">仅展示当前账号有权访问的案件</p><div id="cases" class="case-list"></div></aside>
+      <div class="detail">
+        <section class="panel"><div class="section-head"><h2>02 / 证据与诊断请求</h2><span id="case-status" class="pill">等待选择</span></div><div id="case-summary" class="muted">选择一条案件后查看规则与原始事实。</div><div class="controls"><label>演示模型响应<select id="scenario"><option value="success">正常结构化诊断</option><option value="missing_evidence">证据不足 · 阻止结论</option><option value="invalid_schema">格式错误 · 拒绝写入</option><option value="unknown_reference">未知引用 · 拒绝写入</option><option value="timeout">超时 · 有限重试</option></select></label><button id="diagnose" disabled>提交诊断任务</button><button id="recheck" class="secondary" disabled>复检证据</button></div><details><summary>查看证据与合法引用</summary><pre id="evidence">尚无证据</pre></details></section>
+        <section class="panel"><div class="section-head"><h2>03 / 结构化结果</h2><span class="muted">模型解释，人工核实</span></div><div id="result" class="empty">尚无诊断结果</div></section>
+        <section class="panel"><div class="section-head"><h2>04 / 执行状态与轨迹</h2><span class="muted">从数据库读取</span></div><div id="jobs" class="empty">尚无任务</div><details><summary>查看状态变化与执行代次</summary><div id="events"></div></details></section>
+      </div>
+    </div>
+  </main>
+  <footer>本地展示版 · 固定合成库存 · 所有模型响应均为 Mock，不代表真实根因</footer>
+  <script src="/app.js" defer></script>
+</body></html>

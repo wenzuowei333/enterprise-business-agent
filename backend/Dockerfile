@@ -3,6 +3,8 @@ ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 PYTHONPATH=/workspace:/workspac
 WORKDIR /workspace/backend
 COPY backend/requirements.lock ./
 RUN pip install --no-cache-dir -r requirements.lock
-COPY backend/ ./
-COPY demo/ /workspace/demo/
+RUN groupadd --system app && useradd --system --gid app --home /workspace app && chown -R app:app /workspace
+COPY --chown=app:app backend/ ./
+COPY --chown=app:app demo/ /workspace/demo/
+USER app
 CMD ["python", "-m", "demo.seed", "--export-only"]

@@ -1,13 +1,31 @@
 alembic==1.18.5
     # via -r backend/requirements.txt
+annotated-doc==0.0.5
+    # via fastapi
 annotated-types==0.8.0
     # via pydantic
+anyio==4.16.0
+    # via
+    #   starlette
+    #   watchfiles
 argon2-cffi==25.1.0
     # via -r backend/requirements.txt
 argon2-cffi-bindings==26.1.0
     # via argon2-cffi
 cffi==2.1.1
     # via argon2-cffi-bindings
+click==8.5.0
+    # via uvicorn
+fastapi==0.139.2
+    # via -r backend/requirements.txt
+greenlet==3.5.6
+    # via -r backend/requirements.txt
+h11==0.16.0
+    # via uvicorn
+httptools==0.9.0
+    # via uvicorn
+idna==3.20
+    # via anyio
 mako==1.4.3
     # via alembic
 markupsafe==3.0.4
@@ -21,26 +39,45 @@ pycparser==3.12
 pydantic==2.14.2
     # via
     #   -r backend/requirements.txt
+    #   fastapi
     #   pydantic-settings
 pydantic-core==2.50.2
     # via pydantic
 pydantic-settings==2.14.2
     # via -r backend/requirements.txt
 python-dotenv==1.2.4
-    # via pydantic-settings
+    # via
+    #   pydantic-settings
+    #   uvicorn
+pyyaml==6.0.3
+    # via uvicorn
 sqlalchemy==2.0.51
     # via
     #   -r backend/requirements.txt
     #   alembic
+starlette==1.10.0
+    # via fastapi
 typing-extensions==4.16.0
     # via
     #   alembic
+    #   anyio
+    #   fastapi
     #   psycopg
     #   pydantic
     #   pydantic-core
     #   sqlalchemy
+    #   starlette
     #   typing-inspection
 typing-inspection==0.4.4
     # via
+    #   fastapi
     #   pydantic
     #   pydantic-settings
+uvicorn==0.51.0
+    # via -r backend/requirements.txt
+uvloop==0.23.0
+    # via uvicorn
+watchfiles==1.3.0
+    # via uvicorn
+websockets==17.4
+    # via uvicorn
