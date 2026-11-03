@@ -45,7 +45,7 @@ def main():
         if args.fresh_data_check:
             assert not run("existing-containers",compose+["ps","-aq"]).strip(),"Fresh-data check requires a new Compose project"
             assert not run("existing-volumes",["docker","volume","ls","-q","--filter","label=com.docker.compose.project="+project]).strip(),"Fresh-data check must not delete an existing data volume"
-        app_services=["api","worker"]+(["recovery"] if CREATIVE else [])
+        app_services=["api","worker"]+(["recovery"] if CREATIVE else [])+["api-ingress"]
         run("build-and-start",compose+["--profile","app","up","-d","--build",*app_services,"--wait"])
         internal=run("runtime-network",["docker","network","inspect",project+"_default","--format","{{.Internal}}"]).strip()
         assert internal=="true","Runtime network must be internal"
@@ -70,6 +70,8 @@ def main():
             PYTHONPATH=os.pathsep.join([str(ROOT/"ci/network"),str(ROOT/"backend"),str(ROOT)]),PYTHONDONTWRITEBYTECODE="1")
         (FOLDER/"network-denials.ndjson").write_text("")
         run("python-network-policy",[sys.executable,"ci/network_probe.py"],active_env=test_env)
+        test_services=["test-postgres","test-postgres-ingress"]+(["test-redis","test-redis-ingress"] if CREATIVE else [])
+        run("start-test-ingress",compose+["--profile","checks","up","-d",*test_services,"--wait"])
         run("backend-tests",[sys.executable,"demo/run_checks.py"],active_env=test_env)
         if CREATIVE:
             frontend=ROOT/"frontend"
