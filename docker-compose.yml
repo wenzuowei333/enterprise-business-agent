@@ -1,7 +1,7 @@
 name: portfolio-inventory-stage3
 services:
   postgres:
-    image: postgres:16-alpine
+    image: postgres:16-alpine@sha256:0cefaabd882e42bcb2a2f3dc56d3ce4770560ba62fd7f197f1a2e008fd5731ab
     environment:
       POSTGRES_DB: inventory_demo
       POSTGRES_USER: portfolio_demo
@@ -17,7 +17,7 @@ services:
       retries: 30
   test-postgres:
     profiles: ["checks"]
-    image: postgres:16-alpine
+    image: postgres:16-alpine@sha256:0cefaabd882e42bcb2a2f3dc56d3ce4770560ba62fd7f197f1a2e008fd5731ab
     environment:
       POSTGRES_DB: inventory_demo
       POSTGRES_USER: portfolio_demo
@@ -33,7 +33,7 @@ services:
       retries: 30
   api:
     profiles: ["app"]
-    image: portfolio-inventory-showcase:stage3
+    image: portfolio-inventory-showcase:${SHOWCASE_IMAGE_TAG:-stage3}
     build:
       context: .
       dockerfile: backend/Dockerfile
@@ -52,7 +52,7 @@ services:
       retries: 60
   worker:
     profiles: ["app"]
-    image: portfolio-inventory-worker:stage3
+    image: portfolio-inventory-worker:${SHOWCASE_IMAGE_TAG:-stage3}
     build:
       context: .
       dockerfile: backend/Dockerfile

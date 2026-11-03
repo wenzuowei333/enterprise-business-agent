@@ -1,0 +1,4 @@
+# Apply after docker-compose.yml; package/image downloads happen before runtime.
+networks:
+  default:
+    internal: true

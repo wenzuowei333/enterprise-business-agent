@@ -10,7 +10,7 @@ ROOT=Path(__file__).resolve().parents[1]
 def main():
     env=os.environ.copy()
     env.update({'DATABASE_URL':'postgresql+psycopg://portfolio_demo:local-demo-only@127.0.0.1:25435/inventory_demo',
-                'SHOWCASE_TEST_DATABASE':'1','PYTHONPATH':os.pathsep.join([str(ROOT/'backend'),str(ROOT)]),
+                'SHOWCASE_TEST_DATABASE':'1','PYTHONPATH':os.pathsep.join([str(ROOT/'backend'),str(ROOT),env.get('PYTHONPATH','')]),
                 'PYTHONDONTWRITEBYTECODE':'1','ENVIRONMENT':'demo','AI_MODE':'mock',
                 'EXCEPTION_JOB_LEASE_SECONDS':'0.9','EXCEPTION_WORKER_HEARTBEAT_SECONDS':'0.1',
                 'PROVIDER_TIMEOUT_SECONDS':'3','EXCEPTION_JOB_MAX_ATTEMPTS':'2'})

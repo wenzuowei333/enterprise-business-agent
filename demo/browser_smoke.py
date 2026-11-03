@@ -14,14 +14,22 @@ def main():
     parser.add_argument('--url',default='http://127.0.0.1:18130')
     args=parser.parse_args()
     target=urlparse(args.url)
-    if target.hostname not in {'127.0.0.1','localhost'} or target.port!=18130:
+    if target.hostname not in {'127.0.0.1','localhost'} or target.port not in {18130,18150}:
         raise SystemExit('Browser checks only target this local showcase on port 18130')
     folder=ROOT/'runtime/browser';folder.mkdir(parents=True,exist_ok=True)
+    denied=[]
     results=[];errors=[]
     with sync_playwright() as p:
         chrome=Path('/Applications/Google Chrome.app/Contents/MacOS/Google Chrome')
         browser=p.chromium.launch(executable_path=str(chrome) if chrome.exists() else None,headless=True)
         context=browser.new_context(viewport={'width':1440,'height':1100},device_scale_factor=1)
+        def route_local(route):
+            parsed=urlparse(route.request.url)
+            if parsed.scheme in {'data','blob','about'} or (parsed.hostname in {'127.0.0.1','localhost'} and parsed.port==target.port):
+                route.continue_()
+            else:
+                denied.append(parsed.hostname);route.abort()
+        context.route('**/*',route_local)
         page=context.new_page();page.on('pageerror',lambda e:errors.append(str(e)))
         page.goto(args.url);page.wait_for_function("document.body.dataset.ready === 'true'")
         def sign_in(name,count):
@@ -81,6 +89,7 @@ def main():
         assert page.evaluate('document.documentElement.scrollWidth <= window.innerWidth + 1')
         page.screenshot(path=str(folder/'mobile.png'),full_page=True)
         assert not errors,errors
+        assert not denied,denied
         results.append({'scenario':'mobile_layout','width':390,'horizontal_overflow':False,'uncaught_js_errors':errors})
         context.close();browser.close()
     report={'status':'passed','base_url':args.url,'actual_browser':True,'independent_worker':True,'checks':results}
