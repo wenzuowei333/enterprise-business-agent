@@ -7,3 +7,5 @@
 第三方依赖仍遵循各自许可证。`THIRD_PARTY_NOTICES.md` 和 `docs/dependency-licenses.json` 记录本次锁定依赖的实际安装元数据，保留许可证正文索引和摘要；未将依赖源码或安装环境打包进候选。元数据清单是来源检查记录，不是自动授予许可或法律判断。
 
 参考素材、Mock 占位输出与登录插图的来源沿用合成素材说明。没有复制原业务图片、Logo 或第三方摄影素材。
+
+本次依赖清单中包含 psycopg/psycopg-binary 的 LGPL-3.0-only、certifi 的 MPL-2.0，商品项目另有 Dramatiq 的 LGPLv3+ 与 npm 的 MPL-2.0 项。不能把这些依赖统一称为 MIT。Redis Python 客户端的 MIT 与 Redis Server 的许可不同；锁定的 Redis Server 7.4.12 由上游 `LICENSE.txt` 声明 RSALv2 / SSPLv1 二选一。当前没有向外分发镜像、依赖二进制或构建包；以后分发时需携带相应正文/归属并复核适用义务，不能直接沿用源码范围检查结论。

@@ -89,16 +89,23 @@ Provider 调用不占有案件/任务事务锁。写回重新检查持有者、�
 
 此版展示受控 AI 诊断工作流。自主工具规划、MCP、LangGraph、混合检索、业务自动修复、原生产规模和后续生产成功率不在当前承诺中。6 秒演示租约和 0.9 秒测试租约短于源配置，不应外推为生产容量或长期可靠性结论。
 
-尚未发布 GitHub。后续阶段继续完成脱敏复查与招聘展示材料。
+尚未发布 GitHub。阶段五复现与内容验收已完成；后续继续准备招聘展示材料与发布。
 
 ## 阶段五验收入口
 
-按本文件安装测试依赖与浏览器后，在独立干净检出目录执行：
+在独立干净检出目录安装依赖（需要 Python 3.12、uv、Docker Compose 2.24.4+）：
 
 ```sh
-python ci/run.py --fresh-data-check
+uv venv --python 3.12
+uv pip install -r backend/requirements-dev.lock playwright==1.58.0
+.venv/bin/python -m playwright install chromium
+COMPOSE_PROJECT_NAME=portfolio-inventory-acceptance SHOWCASE_IMAGE_TAG=phase5 .venv/bin/python ci/run.py --fresh-data-check
 ```
+
+命令面向本机演示端口空闲、该 Compose 项目尚不存在的环境。已有相同端口演示时先使用独立端口覆盖；更换项目名不会自动解除宿主机端口冲突。
 
 该入口要求新的 Compose 项目和空数据卷，实际验证种子重复/新卷重建后数据摘要一致，再运行回归和浏览器案例。运行阶段限制外网连接，详见 [阶段五验收](docs/phase5-acceptance.md)。已有演示项目不要传 `--fresh-data-check`；需要与现有服务并存时，在独立 Compose 项目中覆盖端口和镜像标签。
 
 本候选暂按本地/私有展示处理，上游没有许可证授权声明；见 [来源与许可边界](docs/licensing.md)。CI 工作流已编写，本地执行记录与远程 GitHub Actions 运行状态分别报告。
+
+本轮实测摘要、版本、耗时与修复记录见 [阶段五结果](docs/phase5-acceptance.md)。旧阶段报告保留原始时间与口径。
