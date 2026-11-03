@@ -23,7 +23,7 @@
     },
     {
       "file": ".github/workflows/ci.yml",
-      "sha256": "bc9659c2012ace8418b6fbcedaad2650751bdccdfefbbe8c65609393162598eb",
+      "sha256": "2b46225175ca4ef31cc34560709350b2f5b3035265e8693081dfd79e73151035",
       "action": "updated_publication_document_or_ci",
       "phase6_sha256": "1c22e3ee3235994bbc0aeff5ed1d721c821b466ac8c81a50e8136c7ca3f5ac0d"
     },
@@ -521,7 +521,7 @@
     },
     {
       "file": "docs/publication.md",
-      "sha256": "2a266534fc7c675b985d49d3f107f753c7a3d0e9c91a48a36589aa54d8b87d93",
+      "sha256": "0dced1eaa913ad6f61dbea72942b9ae81ca190f26f3154ac44bca8cc47454aa5",
       "action": "added_publication_material",
       "phase6_sha256": null
     },
