@@ -33,4 +33,4 @@ jobs:
           if-no-files-found: error
       - name: Stop dedicated CI services
         if: always()
-        run: docker compose --profile app --profile checks down -v
+        run: docker compose -f docker-compose.yml -f ci/compose.offline.yml --profile app --profile checks down -v --remove-orphans
