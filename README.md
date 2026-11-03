@@ -1,111 +1,67 @@
-# 企业库存异常诊断与可靠 AI 工作流
+# 企业库存异常诊断 AI 工作流
 
-**阶段三已实现最小闭环：登录 → 受限案件 → 库存规则复检 → 诊断入队 → 独立 Worker → 引用校验 → 所有权与证据复核 → 结果展示。** 所有库存、商品、账号和模型响应均为合成或 Mock，无需模型密钥。
+把库存异常证据送入受控诊断流程，确保结果受权限、引用与任务归属约束。
 
-## 一键启动
+**个人职责：原项目独立全栈开发，负责需求梳理、系统设计、前后端实现与部署。** 本仓库仅展示其中可核验的工作流切片；职责源于项目经历自述，源实现与本次展示适配分开记录。
 
-在本候选目录执行，需要 Docker Compose：
+`Python` · `FastAPI` · `PostgreSQL` · `独立 Worker` · `结构化输出校验` · `HTML / JavaScript`
+
+![实际运行界面：合成数据与 Mock 模型](docs/assets/overview.png)
+
+▶ **[观看 约 78 秒实际操作录屏](docs/assets/demo.mp4)** · [分镜与字幕](docs/demo-script.md) · [90 秒／5 分钟面试讲解](docs/interview-guide.md)
+
+录屏由本候选业务代码在独立本机环境运行产生，按实际时间录制，只增加讲解字幕。模型响应和图片均为 Mock/程序合成；页面状态来自 API、数据库和独立 Worker。视频不是模型效果评测。
+
+## 三个可复核的技术点
+
+| 技术点 | 直接证据 |
+|---|---|
+| 权限在查询与回写两端生效 | [实现](backend/app/services/access_control_service.py#L27) · [复现测试](tests/test_access_and_api.py#L27) |
+| 用租约与执行代次隔离迟到 Worker | [实现](backend/app/services/source_task_functions.py#L154) · [复现测试](tests/test_postgres_reliability.py#L158) |
+| 解释必须受证据契约与当前版本约束 | [实现](backend/app/services/evidence_contract.py#L416) · [复现测试](tests/test_diagnosis_boundaries.py#L81) |
+
+[架构与关键时序](docs/architecture.md) · [三个设计取舍](docs/design-decisions.md) · [简历主张与证据](docs/resume-evidence.md)
+
+## 启动与演示
+
+需要 Docker Engine、Compose 2.24.4+；首次构建需要访问依赖源，依赖镜像已锁定内容摘要。在项目根目录执行：
 
 ```sh
 docker compose --profile app up -d --build api worker --wait
 ```
 
-打开 **http://127.0.0.1:18130**。首次启动会迁移并初始化独立的演示库。
+打开 **http://127.0.0.1:18130**。首次启动自动执行迁移与合成种子；已有工作流数据会保留。请先确保默认演示端口未占用；另建 Compose 项目时也需分别覆盖宿主机端口。
 
-| 账号 | 可见范围 | 权限 |
-|---|---|---|
-| demo_admin | 全部 6 案 | 查看、诊断、复检、审计 |
-| demo_east | 东仓 4 案 | 查看、诊断、复检 |
-| demo_viewer | 东仓 4 案 | 只读 |
+| 演示账号 | 范围 |
+|---|---|
+| demo_admin | 全部六个合成库存案件 |
+| demo_east | 东仓四案，可诊断和复检 |
+| demo_viewer | 东仓四案，只读 |
 
-演示密码统一为 `LocalDemo-2026!`，仅用于本地隔离环境。所有发布端口只绑定本机，外部凭据为空，不隐式读取 `.env` 或上级配置。
+统一演示密码：`LocalDemo-2026!`，仅用于本机隔离环境。停止：`docker compose --profile app stop`。恢复与删除专用数据卷的区别、开发方式及端口见 [完整运行手册](docs/runbook.md)。
 
-选择案件后可提交正常诊断、证据不足、格式错误、未知引用、超时五种 Mock 响应。页面读取真实数据库状态；正常诊断仍需人工核实，completed 不等于库存已修复。失败任务不会生成新结论。
+推荐路径：管理员 → DEMO-CASE-001 → 正常诊断 → 查看引用 → 证据不足 → 未知引用失败 → 切换 demo_viewer 查看权限收缩。
 
-停止：`docker compose --profile app stop`。恢复初始样本：`docker compose --profile app down -v` 后重新启动；这只删除本候选的专用演示数据卷。
+[正常／失败场景与预期](docs/demo-scenarios.md) 说明每一步输入、操作和结果判定，不用 HTTP 200 代替业务成功。
 
-## 本机开发
+## 已实际验证
 
-需要 Python 3.12：
+2026-11-03 阶段五：**33 项后端回归，另有 6 组浏览器场景，最终无失败或跳过。** 已通过干净检出、新数据卷、重复种子和再次新卷重建。阶段六只新增展示文档与媒体，业务实现保持阶段五版本；录屏路径另外实际执行。
 
-```sh
-uv venv --python 3.12
-uv pip install -r backend/requirements.lock
-docker compose up -d postgres --wait
-.venv/bin/python demo/bootstrap.py
-PYTHONPATH=backend:. .venv/bin/python -m uvicorn app.main:app --host 127.0.0.1 --port 18130
-```
-
-另一终端启动独立 Worker：
-
-```sh
-PYTHONPATH=backend:. .venv/bin/python -m app.tasks.exception_ai_worker --worker-id demo-worker
-```
-
-本机演示库端口为 25434，库名为 `inventory_demo`，不复用阶段二的 25432。已有诊断任务时，种子初始化会保留工作流历史。
-
-## 验证
-
-```sh
-uv pip install -r backend/requirements-dev.lock
-.venv/bin/python demo/run_checks.py
-```
-
-测试只重置 **25435 端口的专用临时 PostgreSQL**，覆盖权限、证据、并发领取、预算、心跳和真实进程中断/迟到回写。没有用 SQLite 代替 PostgreSQL 租约验证。
-
-可选浏览器验收，先启动应用：
-
-```sh
-uv pip install -r backend/requirements-browser.txt
-.venv/bin/python -m playwright install chromium
-.venv/bin/python demo/browser_smoke.py
-```
-
-运行记录与截图写入被 Git 排除的 `runtime/`。实际执行范围见 `docs/phase3-acceptance.md`。
-
-## 关键机制
-
-```mermaid
-flowchart LR
-    A[登录与权限] --> B[SQL案件范围]
-    B --> C[库存规则复检]
-    C --> D[证据版本与任务去重]
-    D --> E[PostgreSQL领取与租约]
-    E --> F[Mock与输入投影]
-    F --> G[Schema与引用校验]
-    G --> H[持有者 代次 租约 证据复核]
-    H --> I[诊断 事件 通知原子落库]
-```
-
-案件、证据、任务、结果和事件共用服务端范围控制。创建诊断使用案件行锁与原活动任务部分唯一索引去重；领取保留原 admission 锁、`FOR UPDATE SKIP LOCKED`、并发上限和 `attempts` 代次。
-
-Provider 调用不占有案件/任务事务锁。写回重新检查持有者、代次、有效租约、来源、证据版本和请求者当前权限。心跳不能复活过期租约。此版只写诊断工作流，不提供修改库存数量的 API。
-
-超时最多两次执行，无效格式/引用直接失败。额度按 UTC 日保守预留，每次尝试记一条事件，进程中断不退还已预留次数；Mock 不产生模型费用。
-
-## 来源与边界
-
-源快照：`a33686b5b0d3bc9e2d2eb4d85b76b8346afea5be`。源函数复用、适配改动与新建登录/页面/Worker 外层分别记录于 `docs/phase3-adaptations.md`，符号清单见 `docs/source-provenance-phase3.json`。
-
-此版展示受控 AI 诊断工作流。自主工具规划、MCP、LangGraph、混合检索、业务自动修复、原生产规模和后续生产成功率不在当前承诺中。6 秒演示租约和 0.9 秒测试租约短于源配置，不应外推为生产容量或长期可靠性结论。
-
-尚未发布 GitHub。阶段五复现与内容验收已完成；后续继续准备招聘展示材料与发布。
-
-## 阶段五验收入口
-
-在独立干净检出目录安装依赖（需要 Python 3.12、uv、Docker Compose 2.24.4+）：
+[可携带的脱敏验收摘要](docs/assets/acceptance-summary.json) · [测试口径与命令](docs/evaluation.md) · [阶段五详细说明](docs/phase5-acceptance.md)
 
 ```sh
 uv venv --python 3.12
 uv pip install -r backend/requirements-dev.lock playwright==1.58.0
-.venv/bin/python -m playwright install chromium
-COMPOSE_PROJECT_NAME=portfolio-inventory-acceptance SHOWCASE_IMAGE_TAG=phase5 .venv/bin/python ci/run.py --fresh-data-check
+.venv/bin/python demo/run_checks.py
 ```
 
-命令面向本机演示端口空闲、该 Compose 项目尚不存在的环境。已有相同端口演示时先使用独立端口覆盖；更换项目名不会自动解除宿主机端口冲突。
+前述命令执行后端测试，需要专用测试端口空闲；完整离线运行策略、浏览器与空卷复现入口见 [evaluation.md](docs/evaluation.md)。不声称首次下载“五分钟启动”。远程 GitHub Actions 尚未运行，本地验证入口已通过。
 
-该入口要求新的 Compose 项目和空数据卷，实际验证种子重复/新卷重建后数据摘要一致，再运行回归和浏览器案例。运行阶段限制外网连接，详见 [阶段五验收](docs/phase5-acceptance.md)。已有演示项目不要传 `--fresh-data-check`；需要与现有服务并存时，在独立 Compose 项目中覆盖端口和镜像标签。
+## 版本、数据与许可
 
-本候选暂按本地/私有展示处理，上游没有许可证授权声明；见 [来源与许可边界](docs/licensing.md)。CI 工作流已编写，本地执行记录与远程 GitHub Actions 运行状态分别报告。
+这是脱敏展示候选，当前保留在本地／私有范围，尚未公开 GitHub。源快照、逐字复用／展示适配与后续未同步能力见 [版本边界](docs/version-scope.md)。
 
-本轮实测摘要、版本、耗时与修复记录见 [阶段五结果](docs/phase5-acceptance.md)。旧阶段报告保留原始时间与口径。
+本版没有通用工具规划器、MCP、混合检索或自动修改库存。展示的是确定性证据驱动的受控 AI 诊断；租约隔离本地回写，不能保证外部模型调用和收费严格一次。
+
+数据、账号与商品均为固定合成样本，未复制生产导出，见 [脱敏记录](docs/redaction.md)。上游未携带 LICENSE/COPYING/NOTICE；未额外授予开源许可。依赖保留各自许可，详见 [来源与许可边界](docs/licensing.md) 和 [第三方声明](THIRD_PARTY_NOTICES.md)。公开权属确认与正式发布留待后续处理。

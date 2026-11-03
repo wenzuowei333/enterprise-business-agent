@@ -1,0 +1,144 @@
+{
+  "date": "2026-11-03",
+  "tested_commit": "5b55eb71b806e5238e8aa1baf8c548095ac6feb9",
+  "tests_from_new_clean_checkout": true,
+  "summary": {
+    "test_runs": [
+      {
+        "report": "validation.xml",
+        "tests": 33,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "duration_seconds": 92.956
+      }
+    ],
+    "mock_only": true,
+    "real_model_evaluation": false,
+    "browser": {
+      "status": "passed",
+      "scenarios": 6
+    },
+    "network-policy": {
+      "status": "passed",
+      "checks": [
+        {
+          "case": "dns_external",
+          "blocked": true
+        },
+        {
+          "case": "tcp_external_ip",
+          "blocked": true
+        },
+        {
+          "case": "connect_ex_external_ip",
+          "blocked": true
+        },
+        {
+          "case": "loopback_connection",
+          "allowed": true
+        }
+      ]
+    },
+    "data-rebuild": {
+      "status": "passed",
+      "new_project_only": true,
+      "repeat_seed_same_digest": true,
+      "fresh_volume_rebuild_same_digest": true,
+      "normalized_data_sha256": "602ca7164fa61a6f89a003a57692a10877f91761a9a80b05e1b87ba32541c59d",
+      "tables": 19
+    },
+    "execution": {
+      "status": "passed",
+      "scope": "local_CI_entry_from_clean_checkout",
+      "finished_at_utc": "2026-11-03T11:18:33.958537+00:00",
+      "python": "3.12.12",
+      "steps": [
+        {
+          "step": "compose-config",
+          "exit_code": 0,
+          "duration_seconds": 0.166
+        },
+        {
+          "step": "existing-containers",
+          "exit_code": 0,
+          "duration_seconds": 0.191
+        },
+        {
+          "step": "existing-volumes",
+          "exit_code": 0,
+          "duration_seconds": 0.078
+        },
+        {
+          "step": "build-and-start",
+          "exit_code": 0,
+          "duration_seconds": 77.683
+        },
+        {
+          "step": "runtime-network",
+          "exit_code": 0,
+          "duration_seconds": 0.029
+        },
+        {
+          "step": "container-egress-probe",
+          "exit_code": 0,
+          "duration_seconds": 0.219
+        },
+        {
+          "step": "initial-data",
+          "exit_code": 0,
+          "duration_seconds": 1.478
+        },
+        {
+          "step": "repeat-seed",
+          "exit_code": 0,
+          "duration_seconds": 0.948
+        },
+        {
+          "step": "repeat-seed-data",
+          "exit_code": 0,
+          "duration_seconds": 1.416
+        },
+        {
+          "step": "remove-fresh-project",
+          "exit_code": 0,
+          "duration_seconds": 3.116
+        },
+        {
+          "step": "rebuild-empty-data",
+          "exit_code": 0,
+          "duration_seconds": 9.13
+        },
+        {
+          "step": "rebuilt-data",
+          "exit_code": 0,
+          "duration_seconds": 1.312
+        },
+        {
+          "step": "python-network-policy",
+          "exit_code": 0,
+          "duration_seconds": 0.041
+        },
+        {
+          "step": "start-test-ingress",
+          "exit_code": 0,
+          "duration_seconds": 5.712
+        },
+        {
+          "step": "backend-tests",
+          "exit_code": 0,
+          "duration_seconds": 98.851
+        },
+        {
+          "step": "browser-tests",
+          "exit_code": 0,
+          "duration_seconds": 10.272
+        }
+      ],
+      "fresh_data_check_requested": true,
+      "runtime_network_internal": true,
+      "hosted_github_actions_run": false
+    },
+    "status": "passed"
+  }
+}

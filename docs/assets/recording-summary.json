@@ -1,0 +1,26 @@
+{
+  "status": "passed",
+  "recorded_against_phase5_commit": "9f9c6b33f5a3d2f5f7f122b68b668042a61889f9",
+  "mock_only": true,
+  "synthetic_data": true,
+  "duration_seconds": 78.04,
+  "width": 1440,
+  "height": 1000,
+  "fps": 25,
+  "audio_tracks": 0,
+  "real_time": true,
+  "speed_adjusted": false,
+  "spliced": false,
+  "caption_overlay": true,
+  "uncaught_js_errors": 0,
+  "external_browser_requests": 0,
+  "leading_page_load_blank_trim_seconds": 0,
+  "assertions": [
+    "normal_with_refs",
+    "insufficient_evidence_without_refs",
+    "unknown_ref_failed",
+    "read_only_four_cases",
+    "out_of_scope_404"
+  ],
+  "video_sha256": "e3c4c5b5f2ba7b2ec52c51068bbfa462c8bb0335947242932976bd457f83c5f7"
+}
