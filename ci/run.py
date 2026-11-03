@@ -87,7 +87,7 @@ def main():
         assert len(audit)==3,"Unexpected denied external network attempt in tests"
         status="passed"
     finally:
-        execution={"status":status,"scope":"local_CI_entry_from_clean_checkout","finished_at_utc":datetime.now(timezone.utc).isoformat(),"python":sys.version.split()[0],"steps":steps,"fresh_data_check_requested":args.fresh_data_check,"runtime_network_internal":True if status=="passed" else None,"hosted_github_actions_run":False}
+        execution={"status":status,"scope":"github_actions_clean_checkout" if os.environ.get("GITHUB_ACTIONS")=="true" else "local_CI_entry_from_clean_checkout","finished_at_utc":datetime.now(timezone.utc).isoformat(),"python":sys.version.split()[0],"steps":steps,"fresh_data_check_requested":args.fresh_data_check,"runtime_network_internal":True if status=="passed" else None,"hosted_github_actions_run":os.environ.get("GITHUB_ACTIONS")=="true"}
         (FOLDER/"execution.json").write_text(json.dumps(execution,indent=2)+"\n")
         from collect_results import collect
         collect()
