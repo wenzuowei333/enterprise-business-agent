@@ -324,7 +324,7 @@
     },
     {
       "file": "demo/browser_smoke.py",
-      "sha256": "6a6d8a48047c3bcc143b9851d1055a2173518a1ad3a2971f1951a87d35b813ea",
+      "sha256": "464811fbfb159ffdbdeffb27ced1f4a8a522a6d3abbe8748dc979bdcdbaace2e",
       "action": "logout_race_fix_and_browser_regression",
       "phase6_sha256": "68ba002270be8c23a9b7bfc93564fa9df0064c72b17a56212a183f4035cd5d9a"
     },

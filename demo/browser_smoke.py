@@ -31,7 +31,7 @@ def main():
                 denied.append(parsed.hostname);route.abort()
         context.route('**/*',route_local)
         page=context.new_page();page.on('pageerror',lambda e:errors.append(str(e)))
-        page.goto(args.url);page.wait_for_function("document.body.dataset.ready === 'true'")
+        page.goto(args.url);expect(page.locator('body')).to_have_attribute('data-ready','true')
         def sign_in(name,count):
             page.select_option('#account',name)
             page.click('#login')
