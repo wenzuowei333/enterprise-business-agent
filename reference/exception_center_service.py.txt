@@ -1,0 +1,199 @@
+# SOURCE EXCERPTS ONLY — not a runnable module. Integration belongs to phase 3.
+
+# symbol: scoped_exception_stmt; source lines 1973-2067
+def scoped_exception_stmt(db: Session, user: User, occurrence_type: str | None = None):  # noqa: ANN201
+    if occurrence_type is not None and occurrence_type not in OCCURRENCE_TYPES:
+        raise ValueError(f"Unsupported occurrence type: {occurrence_type}")
+    permissions = set(get_final_permission_codes(db, user))
+    if "exception_center.view" not in permissions:
+        return select(ExceptionCase).where(false())
+    conditions = []
+    domain_modes = exception_domain_modes(db)
+    if permissions & {"inventory_snapshot.view", "inventory_check.view"}:
+        inventory_conditions = []
+        if "inventory_snapshot.view" in permissions:
+            inventory_conditions.append(ExceptionCase.source_type.in_(INVENTORY_SNAPSHOT_SOURCE_TYPES))
+        if "inventory_check.view" in permissions:
+            inventory_conditions.append(
+                ExceptionCase.source_type.in_(INVENTORY_CHECK_SOURCE_TYPES)
+            )
+        conditions.append(
+            and_(
+                ExceptionCase.domain == "inventory",
+                or_(*inventory_conditions),
+                _case_resource_scope_condition(db, user, "inventory_snapshot"),
+            )
+        )
+    if "receivable.view" in permissions:
+        conditions.append(
+            and_(
+                ExceptionCase.domain == "receivable",
+                _customer_scope_condition(db, user),
+                _case_resource_scope_condition(db, user, "receivable"),
+            )
+        )
+    if "import.view" in permissions:
+        import_scope = _case_resource_scope_condition(db, user, "import_batch")
+        conditions.append(and_(ExceptionCase.domain == "import", import_scope))
+        conditions.append(
+            and_(
+                ExceptionCase.domain == "master_data",
+                ExceptionCase.resource_type.notin_(("customer", "supplier", "product")),
+                import_scope,
+            )
+        )
+    if "customer.view" in permissions:
+        conditions.append(and_(ExceptionCase.domain == "master_data", ExceptionCase.resource_type == "customer", _customer_scope_condition(db, user)))
+    if "supplier.view" in permissions:
+        conditions.append(
+            and_(
+                ExceptionCase.domain == "master_data",
+                ExceptionCase.resource_type == "supplier",
+                _case_resource_scope_condition(db, user, "supplier"),
+            )
+        )
+    if "product.view" in permissions:
+        conditions.append(
+            and_(
+                ExceptionCase.domain == "master_data",
+                ExceptionCase.resource_type == "product",
+                _case_resource_scope_condition(db, user, "product"),
+            )
+        )
+    crm_mode = domain_modes.get("crm")
+    crm_access_enabled = crm_mode == "visible" or (
+        crm_mode == "shadow" and "exception_center.policy_manage" in permissions
+    )
+    if crm_access_enabled:
+        if "crm_task.view" in permissions:
+            conditions.append(
+                and_(
+                    ExceptionCase.domain == "crm",
+                    ExceptionCase.resource_type == "crm_project_task",
+                    _crm_task_case_scope_condition(db, user),
+                )
+            )
+        if "crm_followup.view" in permissions:
+            conditions.append(
+                and_(
+                    ExceptionCase.domain == "crm",
+                    ExceptionCase.resource_type == "crm_followup",
+                    _crm_followup_case_scope_condition(db, user),
+                )
+            )
+    approval_mode = domain_modes.get("approval")
+    approval_access_enabled = approval_mode == "visible" or (
+        approval_mode == "shadow" and "exception_center.policy_manage" in permissions
+    )
+    if approval_access_enabled:
+        conditions.append(
+            and_(
+                ExceptionCase.domain == "approval",
+                ExceptionCase.resource_id.in_(visible_approval_resource_ids_stmt(db, user)),
+            )
+        )
+    stmt = select(ExceptionCase).where(or_(*conditions)) if conditions else select(ExceptionCase).where(false())
+    if occurrence_type is not None:
+        stmt = stmt.where(ExceptionCase.occurrence_type == occurrence_type)
+    return stmt
+
+# symbol: create_diagnosis_job; source lines 2750-2847
+def create_diagnosis_job(
+    db: Session,
+    case: ExceptionCase,
+    user_id: int | None,
+    trigger_type: str = "manual",
+    force: bool = False,
+) -> tuple[ExceptionDiagnosisJob, bool]:
+    locked_case = db.scalar(select(ExceptionCase).where(ExceptionCase.id == case.id).with_for_update())
+    if locked_case is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Exception case not found")
+    case = locked_case
+    if case.domain not in AI_DIAGNOSIS_DOMAINS:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail={
+                "error_code": "exception_diagnosis_not_supported",
+                "message": f"AI diagnosis is not supported for the {case.domain} exception domain",
+                "module": "exceptions",
+                "resource_type": case.resource_type,
+                "resource_id": case.resource_id,
+                "case_no": case.case_no,
+                "retryable": False,
+                "action_path": f"/exceptions?open={case.case_no}",
+            },
+        )
+    if case.status in {"resolved", "ignored"}:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Resolved or ignored exception cases cannot be diagnosed",
+        )
+    existing_diagnosis = db.scalar(
+        select(ExceptionDiagnosis).where(
+            ExceptionDiagnosis.case_id == case.id,
+            ExceptionDiagnosis.evidence_version == case.evidence_version,
+        )
+    )
+    if existing_diagnosis is not None and not force:
+        job = db.scalar(
+            select(ExceptionDiagnosisJob)
+            .where(
+                ExceptionDiagnosisJob.case_id == case.id,
+                ExceptionDiagnosisJob.evidence_version == case.evidence_version,
+                ExceptionDiagnosisJob.status == "completed",
+            )
+            .order_by(ExceptionDiagnosisJob.id.desc())
+            .limit(1)
+        )
+        if job:
+            return job, True
+    active = db.scalar(
+        select(ExceptionDiagnosisJob).where(
+            ExceptionDiagnosisJob.case_id == case.id,
+            ExceptionDiagnosisJob.evidence_version == case.evidence_version,
+            ExceptionDiagnosisJob.status.in_(("queued", "processing")),
+        )
+    )
+    if active:
+        return active, True
+    job = ExceptionDiagnosisJob(
+        job_no=f"EXJOB-{utcnow():%Y%m%d%H%M%S}-{secrets.token_hex(4).upper()}",
+        case_id=case.id,
+        evidence_version=case.evidence_version,
+        trigger_type=trigger_type,
+        status="queued",
+        requested_by_user_id=user_id,
+        available_at=utcnow(),
+    )
+    try:
+        with db.begin_nested():
+            db.add(job)
+            db.flush()
+    except IntegrityError:
+        active = db.scalar(
+            select(ExceptionDiagnosisJob)
+            .where(
+                ExceptionDiagnosisJob.case_id == case.id,
+                ExceptionDiagnosisJob.evidence_version == case.evidence_version,
+                ExceptionDiagnosisJob.status.in_(("queued", "processing")),
+            )
+            .order_by(ExceptionDiagnosisJob.id.desc())
+            .limit(1)
+        )
+        if active is not None:
+            return active, True
+        raise
+    previous_status = case.status
+    case.status = "processing"
+    db.add(
+        ExceptionEvent(
+            case_id=case.id,
+            event_type="diagnosis_queued",
+            from_status=previous_status,
+            to_status="processing",
+            actor_user_id=user_id,
+            detail_json={"job_no": job.job_no},
+        )
+    )
+    return job, False
+

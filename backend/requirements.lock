@@ -1,0 +1,46 @@
+alembic==1.18.5
+    # via -r backend/requirements.txt
+annotated-types==0.8.0
+    # via pydantic
+argon2-cffi==25.1.0
+    # via -r backend/requirements.txt
+argon2-cffi-bindings==26.1.0
+    # via argon2-cffi
+cffi==2.1.1
+    # via argon2-cffi-bindings
+mako==1.4.3
+    # via alembic
+markupsafe==3.0.4
+    # via mako
+psycopg==3.3.4
+    # via -r backend/requirements.txt
+psycopg-binary==3.3.4
+    # via psycopg
+pycparser==3.12
+    # via cffi
+pydantic==2.14.2
+    # via
+    #   -r backend/requirements.txt
+    #   pydantic-settings
+pydantic-core==2.50.2
+    # via pydantic
+pydantic-settings==2.14.2
+    # via -r backend/requirements.txt
+python-dotenv==1.2.4
+    # via pydantic-settings
+sqlalchemy==2.0.51
+    # via
+    #   -r backend/requirements.txt
+    #   alembic
+typing-extensions==4.16.0
+    # via
+    #   alembic
+    #   psycopg
+    #   pydantic
+    #   pydantic-core
+    #   sqlalchemy
+    #   typing-inspection
+typing-inspection==0.4.4
+    # via
+    #   pydantic
+    #   pydantic-settings

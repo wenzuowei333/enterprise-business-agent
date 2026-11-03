@@ -1,0 +1,65 @@
+# SOURCE EXCERPTS ONLY — not a runnable module. Integration belongs to phase 3.
+
+# symbol: request_diagnosis; source lines 694-754
+@router.post("/exceptions/{case_no}/diagnoses", response_model=DiagnosisJobResponse, status_code=status.HTTP_202_ACCEPTED)
+def request_diagnosis(
+    case_no: str,
+    body: DiagnosisRequest,
+    db: Session = Depends(get_db),
+    feature_enabled: None = Depends(require_exception_ai_enabled),
+    current_user: User = Depends(require_permission("exception_center.diagnose")),
+) -> dict[str, Any]:
+    # Do not hold a case row lock while the deterministic refresh acquires the
+    # global scan advisory lock. The case is locked and revalidated afterwards.
+    case = _visible_case_or_404(db, current_user, case_no)
+    case_domain = case.domain
+    if case.domain not in AI_DIAGNOSIS_DOMAINS:
+        raise _diagnosis_not_supported_error(case)
+    manual_budget = ai_budget_status(db, trigger_type="manual")
+    if not manual_budget["policy_enabled"] or not manual_budget["enabled"]:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail={
+                "error_code": "exception_manual_ai_disabled",
+                "message": "Manual exception diagnosis is disabled by policy",
+                "module": "exceptions",
+                "case_no": case.case_no,
+                "retryable": False,
+                "action_path": f"/exceptions?open={case.case_no}",
+            },
+        )
+    if not manual_budget["available"]:
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail={
+                "error_code": "exception_manual_ai_daily_limit_reached",
+                "message": "Manual exception diagnosis daily limit reached",
+                "module": "exceptions",
+                "case_no": case.case_no,
+                "retryable": True,
+                "action_path": f"/exceptions?open={case.case_no}",
+            },
+        )
+    # Refresh deterministic evidence before spending model budget. The latest
+    # source batch may have changed since this case was first detected.
+    sync_exception_cases(db, domains={case_domain}, **exception_case_sync_target(case))
+    case = _visible_case_for_update_or_404(db, current_user, case_no)
+    if case.status == "resolved":
+        db.commit()
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail={
+                "error_code": "exception_already_resolved",
+                "message": "最新确定性复检已不再发现该异常，无需发起智能诊断。",
+                "module": "exceptions",
+                "resource_type": case.resource_type,
+                "resource_id": case.resource_id,
+                "case_no": case.case_no,
+                "action_path": f"/exceptions?open={case.case_no}",
+            },
+        )
+    job, reused = create_diagnosis_job(db, case, current_user.id, force=body.force)
+    db.commit()
+    db.refresh(job)
+    return serialize_job(job, case.case_no, reused)
+
