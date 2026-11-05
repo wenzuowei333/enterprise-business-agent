@@ -9,3 +9,5 @@
 [逐文件覆盖记录](source-coverage-full.json) · [页面截图](screenshots.md) · [验证结果](validation.md)
 
 完整项目指所选 GitHub 源快照的应用模块，排除的是原品牌媒体、运行数据、生产环境与内部规划/运维记录；尚未同步到 GitHub 的后续本地代码不在本版中。
+
+本轮完整源快照：`a33686b5b0d3bc9e2d2eb4d85b76b8346afea5be`。根目录 `SOURCE_REVISION` 是原运维工具所用的历史发布基线，按其契约保留，不代表本轮取材提交。

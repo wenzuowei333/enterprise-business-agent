@@ -19,8 +19,8 @@
     },
     {
       "file": ".github/workflows/ci.yml",
-      "sha256": "274950b15642101f34b86102632cfc6627ce6f907cca0135cdf8d183a78996c7",
-      "bytes": 2053
+      "sha256": "8066988f1ef95e6699ffc2337b266804deac2279b267e65ce7aaf45eb5b11c7b",
+      "bytes": 2219
     },
     {
       "file": ".gitignore",
@@ -39,7 +39,7 @@
     },
     {
       "file": "SOURCE_REVISION",
-      "sha256": "93a0fc9ebdcbcd7a92510bc52e93dccd8dea10a45c9a17962073048d34ea4c21",
+      "sha256": "c3837e9194bdd20967b05d87fa701431c4a8ae70c48c096c5649737e5792d86f",
       "bytes": 41
     },
     {
@@ -2534,8 +2534,8 @@
     },
     {
       "file": "docs/modules.md",
-      "sha256": "9dec81c34b79140d6577c39413fcb7ae4080b9c1d2d7e54c3f2428fc3aa84359",
-      "bytes": 932
+      "sha256": "ccc57f98c641d03d7b4c6ac3cd8b531b575f9395ffb6ea87c6f6a7cc5e170d88",
+      "bytes": 1130
     },
     {
       "file": "docs/resume-evidence.md",
