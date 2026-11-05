@@ -11,7 +11,7 @@
       "file": "SOURCE_REVISION",
       "action": "unchanged",
       "source_sha256": "c3837e9194bdd20967b05d87fa701431c4a8ae70c48c096c5649737e5792d86f",
-      "current_sha256": "93a0fc9ebdcbcd7a92510bc52e93dccd8dea10a45c9a17962073048d34ea4c21"
+      "current_sha256": "c3837e9194bdd20967b05d87fa701431c4a8ae70c48c096c5649737e5792d86f"
     },
     {
       "file": "android/README.md",
@@ -3578,5 +3578,6 @@
     "Internal planning and operational reports",
     "Original production environment and history"
   ],
-  "notes": "Complete application modules retained. Coverage rows include upstream modules and explicitly documented verified showcase adaptations; new demo files are identified in the release manifest."
+  "notes": "Complete application modules retained. Coverage rows include upstream modules and explicitly documented verified showcase adaptations; new demo files are identified in the release manifest.",
+  "source_snapshot_commit": "a33686b5b0d3bc9e2d2eb4d85b76b8346afea5be"
 }
