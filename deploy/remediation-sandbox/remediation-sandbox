@@ -1,0 +1,50 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+language="${1:-}"
+candidate="$(head -c 10001)"
+if [ "${#candidate}" -gt 10000 ]; then
+  echo "candidate_too_large" >&2
+  exit 64
+fi
+
+case "$language" in
+  shell)
+    printf '%s\n' "$candidate" | /bin/sh -eu
+    ;;
+  sql)
+    rm -rf /tmp/pgdata /tmp/pgsocket
+    install -d -m 0700 /tmp/pgdata
+    install -d -m 0700 /tmp/pgsocket
+    initdb -D /tmp/pgdata --auth=trust --no-locale --encoding=UTF8 >/dev/null
+    pg_ctl -D /tmp/pgdata -o "-k /tmp/pgsocket -h ''" -w start >/dev/null
+    trap 'pg_ctl -D /tmp/pgdata -m immediate stop >/dev/null 2>&1 || true' EXIT
+    createdb -h /tmp/pgsocket remediation
+    psql -v ON_ERROR_STOP=1 -h /tmp/pgsocket -d remediation <<'SQL'
+CREATE TABLE remediation_sample (
+  id bigint PRIMARY KEY,
+  resource_code text NOT NULL,
+  expected_value numeric,
+  actual_value numeric
+);
+INSERT INTO remediation_sample VALUES (1, 'SAMPLE-001', 10, 8);
+SQL
+    printf '%s\n' "$candidate" | psql -v ON_ERROR_STOP=1 -h /tmp/pgsocket -d remediation
+    ;;
+  http)
+    while IFS= read -r url; do
+      [[ "$url" == http://127.0.0.1:18080/* ]] || { echo "external_http_target_rejected" >&2; exit 65; }
+    done < <(printf '%s' "$candidate" | grep -Eo "https?://[^[:space:]\"']+" || true)
+    mkdir -p /tmp/mock-api
+    printf '{"ok":true,"source":"isolated-mock"}\n' >/tmp/mock-api/index.html
+    python3 -m http.server 18080 --bind 127.0.0.1 --directory /tmp/mock-api >/tmp/mock-api.log 2>&1 &
+    server_pid=$!
+    trap 'kill "$server_pid" >/dev/null 2>&1 || true' EXIT
+    sleep 0.2
+    printf '%s\n' "$candidate" | /bin/sh -eu
+    ;;
+  *)
+    echo "unsupported_language" >&2
+    exit 64
+    ;;
+esac

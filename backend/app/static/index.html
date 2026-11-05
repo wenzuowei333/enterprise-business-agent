@@ -1,0 +1,473 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>管理中心</title>
+    <link rel="icon" href="data:," />
+    <link rel="stylesheet" href="/assets/styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div class="sidebar-brand">
+          <div class="brand-mark">E</div>
+          <div>
+            <p class="brand-title">管理中心</p>
+            <p class="brand-subtitle">Management Center</p>
+          </div>
+        </div>
+
+        <div class="nav-section-title">MAIN MENU</div>
+        <nav class="nav">
+          <a class="active" href="#overview">
+            <span class="nav-icon">▦</span>
+            <span class="nav-meta"><strong>底座状态</strong><span>工程、权限和主数据</span></span>
+            <span class="nav-chevron">⌄</span>
+          </a>
+          <a href="#import">
+            <span class="nav-icon">▧</span>
+            <span class="nav-meta"><strong>文件导入</strong><span>员工、客户、商品、供应商</span></span>
+            <span class="nav-chevron">⌄</span>
+          </a>
+          <a href="#batches">
+            <span class="nav-icon">▣</span>
+            <span class="nav-meta"><strong>导入批次</strong><span>预览、校验和提交</span></span>
+            <span class="nav-chevron">⌄</span>
+          </a>
+          <a href="#master">
+            <span class="nav-icon">▤</span>
+            <span class="nav-meta"><strong>主数据</strong><span>客户、商品、供应商</span></span>
+            <span class="nav-chevron">⌄</span>
+          </a>
+        </nav>
+
+        <div class="sidebar-card sidebar-action-card">
+          <div class="mini-title">管理中心</div>
+          <h3>主数据与权限管理</h3>
+          <p>集中管理账号、权限、导入和基础档案。</p>
+        </div>
+
+        <div class="sidebar-footer">
+          <b>运行状态</b>
+          <p id="backend-status">backend checking</p>
+          <p id="db-status">db checking</p>
+        </div>
+      </aside>
+
+      <main class="main">
+        <div class="container">
+          <section class="section hero-section">
+            <div class="section-header">
+              <div>
+                <p class="eyebrow">MANAGEMENT CENTER</p>
+                <h1>管理中心</h1>
+                <div class="muted">统一管理账号、权限、审计、主数据和业务工作台。</div>
+              </div>
+              <div class="actions">
+                <button id="refresh-button" type="button">刷新状态</button>
+              </div>
+            </div>
+          </section>
+
+          <section class="section auth-section">
+            <div class="auth-stage">
+              <div class="auth-gradient-layer" aria-hidden="true"></div>
+              <div class="auth-brand-floating" aria-hidden="true">
+                <div class="auth-logo">E</div>
+                <span>管理中心</span>
+              </div>
+              <div class="glass-auth-card">
+                <div class="auth-card-header">
+                  <div class="auth-logo large">E</div>
+                  <p class="auth-overline">MANAGEMENT CENTER</p>
+                  <h2>登录管理中心</h2>
+                  <p>进入账号、权限、审计和主数据工作台。</p>
+                </div>
+
+                <div class="glass-input-wrap">
+                  <label for="login-username">用户名</label>
+                  <div class="glass-input">
+                    <span class="field-icon">@</span>
+                    <input id="login-username" autocomplete="username" value="admin" placeholder="请输入用户名" />
+                  </div>
+                </div>
+
+                <div class="glass-input-wrap">
+                  <label for="login-password">密码</label>
+                  <div class="glass-input">
+                    <span class="field-icon">#</span>
+                    <input id="login-password" autocomplete="current-password" type="password" placeholder="请输入密码" />
+                    <button id="toggle-password" class="icon-button" type="button" aria-label="显示或隐藏密码">◎</button>
+                  </div>
+                </div>
+
+                <button id="login-button" class="glass-login-button" type="button">
+                  <span>进入系统</span>
+                  <span class="button-arrow">→</span>
+                </button>
+                <p id="login-state" class="auth-state">未登录</p>
+              </div>
+            </div>
+          </section>
+
+          <section id="overview" class="section main-grid">
+          <article class="panel metrics-panel">
+            <div class="panel-heading">
+              <h2>底座状态</h2>
+              <span class="view-chip">表格视图</span>
+            </div>
+            <div class="metric-grid">
+              <div><span>用户</span><strong id="metric-users">-</strong></div>
+              <div><span>员工</span><strong id="metric-employees">-</strong></div>
+              <div><span>客户</span><strong id="metric-customers">-</strong></div>
+              <div><span>商品</span><strong id="metric-products">-</strong></div>
+              <div><span>供应商</span><strong id="metric-suppliers">-</strong></div>
+              <div><span>导入批次</span><strong id="metric-batches">-</strong></div>
+              <div><span>权根规则</span><strong id="metric-authority">-</strong></div>
+              <div><span>审计</span><strong id="metric-audit">-</strong></div>
+            </div>
+          </article>
+
+          <article id="import" class="panel import-panel">
+            <div class="panel-heading">
+              <h2>主数据导入</h2>
+              <span id="import-state" class="muted">等待文件</span>
+            </div>
+            <div class="form-row">
+              <label>
+                类型
+                <select id="import-file-type">
+                  <option value="employee_profile">员工档案</option>
+                  <option value="customer_master">客户档案</option>
+                  <option value="product_master">商品档案</option>
+                  <option value="supplier_master">供应商档案</option>
+                </select>
+              </label>
+              <label>
+                数据日期
+                <input id="import-data-date" type="date" />
+              </label>
+            </div>
+            <label>
+              文件
+              <input id="import-file" accept=".csv,.xls,.xlsx" type="file" />
+            </label>
+            <div class="button-row">
+              <button id="upload-button" type="button">上传</button>
+              <button id="validate-button" type="button" disabled>校验</button>
+              <button id="commit-button" type="button" disabled>提交</button>
+            </div>
+            <pre id="batch-preview" class="preview-box">尚无批次</pre>
+          </article>
+
+          <article id="batches" class="panel table-panel">
+            <div class="panel-heading">
+              <h2>最近导入</h2>
+              <button id="reload-batches-button" type="button">重载</button>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>类型</th>
+                    <th>状态</th>
+                    <th>行数</th>
+                    <th>成功</th>
+                    <th>错误</th>
+                  </tr>
+                </thead>
+                <tbody id="batch-table"></tbody>
+              </table>
+            </div>
+          </article>
+
+          <article id="master" class="panel table-panel">
+            <div class="panel-heading">
+              <h2>主数据样例</h2>
+              <select id="master-kind">
+                <option value="customers">客户</option>
+                <option value="products">商品</option>
+                <option value="suppliers">供应商</option>
+              </select>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>编号</th>
+                    <th>名称</th>
+                    <th>状态</th>
+                  </tr>
+                </thead>
+                <tbody id="master-table"></tbody>
+              </table>
+            </div>
+          </article>
+          </section>
+        </div>
+      </main>
+    </div>
+
+    <div id="auth-modal" class="auth-modal" aria-hidden="true">
+      <div class="auth-modal-card">
+        <button id="auth-modal-close" class="icon-button modal-close" type="button" aria-label="关闭登录提示">×</button>
+        <div id="auth-modal-icon" class="auth-modal-icon"></div>
+        <h2 id="auth-modal-title">正在登录</h2>
+        <p id="auth-modal-text">正在校验身份信息...</p>
+      </div>
+    </div>
+
+    <script>
+      const state = {
+        token: localStorage.getItem("project_base_token") || "",
+        currentBatchId: null
+      };
+
+      const $ = (selector) => document.querySelector(selector);
+
+      function setText(selector, text) {
+        const node = $(selector);
+        if (node) node.textContent = text;
+      }
+
+      function setLoginState(message, kind = "") {
+        const node = $("#login-state");
+        if (!node) return;
+        node.textContent = message;
+        node.className = `auth-state ${kind}`.trim();
+      }
+
+      function showAuthModal(kind, title, text, icon) {
+        const modal = $("#auth-modal");
+        modal.className = `auth-modal show ${kind}`;
+        modal.setAttribute("aria-hidden", "false");
+        setText("#auth-modal-title", title);
+        setText("#auth-modal-text", text);
+        setText("#auth-modal-icon", icon);
+        $("#auth-modal-close").style.display = kind === "loading" ? "none" : "inline-grid";
+      }
+
+      function hideAuthModal() {
+        const modal = $("#auth-modal");
+        modal.className = "auth-modal";
+        modal.setAttribute("aria-hidden", "true");
+      }
+
+      function authHeaders() {
+        return state.token ? { Authorization: `Bearer ${state.token}` } : {};
+      }
+
+      async function requestJson(url, options = {}) {
+        const response = await fetch(url, options);
+        if (!response.ok) {
+          const text = await response.text();
+          throw new Error(text || `HTTP ${response.status}`);
+        }
+        return response.json();
+      }
+
+      async function loadStatus() {
+        try {
+          const meta = await requestJson("/api/v1/meta");
+          setText("#backend-status", `${meta.version} / ${meta.environment}`);
+          const db = await requestJson("/api/v1/health/db");
+          setText("#db-status", `db ${db.database}`);
+        } catch (error) {
+          setText("#db-status", "db error");
+        }
+      }
+
+      async function login() {
+        const username = $("#login-username").value.trim();
+        const password = $("#login-password").value;
+        const button = $("#login-button");
+        if (!username || !password) {
+          setLoginState("请输入用户名和密码", "error");
+          showAuthModal("error", "无法登录", "用户名和密码都需要填写。", "!");
+          return;
+        }
+        try {
+          button.disabled = true;
+          button.classList.add("is-loading");
+          button.querySelector("span").textContent = "正在登录";
+          setLoginState("正在校验身份信息...");
+          showAuthModal("loading", "正在登录", "正在校验身份信息...", "");
+          const data = await requestJson("/api/v1/auth/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ username, password })
+          });
+          state.token = data.access_token;
+          localStorage.setItem("project_base_token", state.token);
+          setLoginState(`${data.user.real_name} / ${data.user.role}`, "success");
+          showAuthModal("success", "登录成功", "工作台数据正在刷新。", "✓");
+          await refreshAll();
+          window.setTimeout(hideAuthModal, 900);
+        } catch (error) {
+          state.token = "";
+          localStorage.removeItem("project_base_token");
+          setLoginState("登录失败，请检查用户名或密码", "error");
+          showAuthModal("error", "登录失败", "请检查用户名或密码后重试。", "!");
+        } finally {
+          button.disabled = false;
+          button.classList.remove("is-loading");
+          button.querySelector("span").textContent = "进入系统";
+        }
+      }
+
+      async function loadMe() {
+        if (!state.token) return;
+        try {
+          const user = await requestJson("/api/v1/auth/me", { headers: authHeaders() });
+          setLoginState(`${user.real_name} / ${user.role}`, "success");
+        } catch (error) {
+          state.token = "";
+          localStorage.removeItem("project_base_token");
+          setLoginState("未登录");
+        }
+      }
+
+      async function loadSummary() {
+        if (!state.token) return;
+        const summary = await requestJson("/api/v1/admin/stage1/summary", { headers: authHeaders() });
+        setText("#metric-users", summary.users);
+        setText("#metric-employees", summary.employees);
+        setText("#metric-customers", summary.customers);
+        setText("#metric-products", summary.products);
+        setText("#metric-suppliers", summary.suppliers);
+        setText("#metric-batches", summary.import_batches);
+        setText("#metric-authority", summary.authority_root_rules);
+        setText("#metric-audit", summary.audit_logs);
+      }
+
+      async function uploadBatch() {
+        const file = $("#import-file").files[0];
+        if (!file) throw new Error("请选择文件");
+        const formData = new FormData();
+        formData.append("file_type", $("#import-file-type").value);
+        formData.append("data_date", $("#import-data-date").value || new Date().toISOString().slice(0, 10));
+        formData.append("file", file);
+        const batch = await requestJson("/api/v1/import/upload", {
+          method: "POST",
+          headers: authHeaders(),
+          body: formData
+        });
+        state.currentBatchId = batch.id;
+        $("#validate-button").disabled = false;
+        $("#commit-button").disabled = true;
+        setText("#import-state", `已上传批次 ${batch.id}`);
+        renderBatchPreview(batch);
+        await loadBatches();
+      }
+
+      async function validateBatch() {
+        if (!state.currentBatchId) return;
+        const batch = await requestJson(`/api/v1/import/batches/${state.currentBatchId}/validate`, {
+          method: "POST",
+          headers: authHeaders()
+        });
+        $("#commit-button").disabled = batch.error_rows > 0;
+        setText("#import-state", batch.error_rows > 0 ? `校验有 ${batch.error_rows} 个错误` : "校验通过");
+        renderBatchPreview(batch);
+        await loadBatches();
+      }
+
+      async function commitBatch() {
+        if (!state.currentBatchId) return;
+        const batch = await requestJson(`/api/v1/import/batches/${state.currentBatchId}/commit`, {
+          method: "POST",
+          headers: authHeaders()
+        });
+        setText("#import-state", `提交结果：${batch.status}`);
+        renderBatchPreview(batch);
+        $("#commit-button").disabled = true;
+        await refreshAll();
+      }
+
+      function renderBatchPreview(batch) {
+        const lines = [
+          `批次：${batch.id} / ${batch.batch_no}`,
+          `类型：${batch.file_type}`,
+          `状态：${batch.status}`,
+          `行数：${batch.total_rows}，成功：${batch.success_rows}，错误：${batch.error_rows}`,
+          `字段映射：${JSON.stringify(batch.mapping_json || {}, null, 2)}`
+        ];
+        $("#batch-preview").textContent = lines.join("\\n");
+      }
+
+      async function loadBatches() {
+        if (!state.token) return;
+        const batches = await requestJson("/api/v1/import/batches", { headers: authHeaders() });
+        $("#batch-table").innerHTML = batches.slice(0, 10).map((batch) => `
+          <tr>
+            <td>${batch.id}</td>
+            <td>${batch.file_type}</td>
+            <td>${batch.status}</td>
+            <td>${batch.total_rows}</td>
+            <td>${batch.success_rows}</td>
+            <td>${batch.error_rows}</td>
+          </tr>
+        `).join("");
+      }
+
+      async function loadMasterData() {
+        if (!state.token) return;
+        const kind = $("#master-kind").value;
+        const rows = await requestJson(`/api/v1/master-data/${kind}?limit=10`, { headers: authHeaders() });
+        $("#master-table").innerHTML = rows.map((row) => {
+          const code = row.customer_code || row.product_code || row.supplier_code;
+          const name = row.customer_name || row.product_name || row.supplier_name;
+          return `<tr><td>${code}</td><td>${name}</td><td>${row.status}</td></tr>`;
+        }).join("");
+      }
+
+      async function refreshAll() {
+        await loadStatus();
+        await loadMe();
+        await Promise.all([loadSummary(), loadBatches(), loadMasterData()]);
+      }
+
+      function bind(selector, event, handler) {
+        $(selector).addEventListener(event, async () => {
+          try {
+            await handler();
+          } catch (error) {
+            if (selector === "#login-button") {
+              setLoginState(error.message || "登录失败", "error");
+            } else {
+              setText("#import-state", error.message || "操作失败");
+            }
+          }
+        });
+      }
+
+      $("#import-data-date").value = new Date().toISOString().slice(0, 10);
+      bind("#login-button", "click", login);
+      $("#login-password").addEventListener("keydown", (event) => {
+        if (event.key === "Enter") login();
+      });
+      $("#login-username").addEventListener("keydown", (event) => {
+        if (event.key === "Enter") $("#login-password").focus();
+      });
+      $("#toggle-password").addEventListener("click", () => {
+        const input = $("#login-password");
+        const isHidden = input.type === "password";
+        input.type = isHidden ? "text" : "password";
+        setText("#toggle-password", isHidden ? "◌" : "◎");
+      });
+      $("#auth-modal-close").addEventListener("click", hideAuthModal);
+      $("#auth-modal").addEventListener("click", (event) => {
+        if (event.target.id === "auth-modal") hideAuthModal();
+      });
+      bind("#refresh-button", "click", refreshAll);
+      bind("#reload-batches-button", "click", loadBatches);
+      bind("#upload-button", "click", uploadBatch);
+      bind("#validate-button", "click", validateBatch);
+      bind("#commit-button", "click", commitBatch);
+      bind("#master-kind", "change", loadMasterData);
+      refreshAll();
+    </script>
+  </body>
+</html>

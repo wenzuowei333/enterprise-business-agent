@@ -1,79 +1,65 @@
-# 企业库存异常诊断 AI 工作流
+# 企业业务管理平台与 AI Agent
 
-[![Mock acceptance](https://github.com/wenzuowei333/enterprise-business-agent/actions/workflows/ci.yml/badge.svg)](https://github.com/wenzuowei333/enterprise-business-agent/actions/workflows/ci.yml) · [v0.1.0-showcase](https://github.com/wenzuowei333/enterprise-business-agent/releases/tag/v0.1.0-showcase) · [作者主页](https://github.com/wenzuowei333)
+完整项目脱敏展示版：保留 Web 前后端、账号与权限、主数据、销售采购、库存与往来、CRM、审批、AI 助手、移动端源码和部署工具。数据来自独立生成的虚构样本。
 
-把库存异常证据送入受控诊断流程，确保结果受权限、引用与任务归属约束。
+[页面截图](docs/screenshots.md) · [功能与源码导航](docs/modules.md) · [本地启动](#快速启动) · [版本与验证](docs/validation.md) · [v0.2.0-full-project](https://github.com/wenzuowei333/enterprise-business-agent/releases/tag/v0.2.0-full-project)
 
-**个人职责：原项目独立全栈开发，负责需求梳理、系统设计、前后端实现与部署。** 本仓库仅展示其中可核验的工作流切片；职责源于项目经历自述，源实现与本次展示适配分开记录。
+![完整经营工作台](docs/screenshots/01-dashboard.png)
 
-`Python` · `FastAPI` · `PostgreSQL` · `独立 Worker` · `结构化输出校验` · `HTML / JavaScript`
+## 项目覆盖
 
-![实际运行界面：合成数据与 Mock 模型](docs/assets/overview.png)
+| 模块 | 展示内容 | 源码 |
+|---|---|---|
+| 经营工作台 | 销售、毛利、采购、库存摘要，行动队列与经营趋势 | `frontend/src/App.tsx`、`backend/app/api/routes/dashboard.py` |
+| 主数据与导入 | 员工、客户、商品、供应商、分类、客户画像、文件预览与确认 | `backend/app/services/import_service.py`、`backend/app/models/master_data.py` |
+| 销售、采购与往来 | 明细筛选、层级分类、往来对账与应收核验 | `backend/app/api/routes/process_data.py`、`receivables.py` |
+| 库存与履约 | 库存快照、盘点校验、流水、订单及配送执行 | `inventory_check.py`、`inventory_flow.py`、`fulfillment.py` |
+| 客户 CRM | 项目、任务、跟进、线索开发、经营资料、标签、报表和复盘 | `backend/app/services/crm_*`、`backend/app/api/routes/crm_*` |
+| 审批与协作 | 审批流、退回补充、项目撤回、待支持事项与审计 | `approval_service.py`、`work_item_service.py` |
+| AI / Agent | 业务上下文、统一编排、证据约束诊断、SSE 对话、受控动作与租约任务 | `global_ai_orchestrator.py`、`hermes_ai_service.py`、`exception_task_service.py` |
+| 账号与权限 | 角色模板、用户覆盖、数据范围、字段脱敏、操作审计 | `access_control_service.py`、`permission_service.py` |
+| 图片处理 | 图片上传、批处理、下载与清理；水印已换成 DEMO 素材 | `backend/app/api/routes/image_processing.py`、`tools/image_batch_processor/` |
+| Android | Compose 页面、Room 离线数据、同步、上传、更新与移动 API | `android/`；本次未构建或发布 APK |
 
-▶ **[观看 约 78 秒实际操作录屏](docs/assets/demo.mp4)** · [分镜与字幕](docs/demo-script.md) · [90 秒／5 分钟面试讲解](docs/interview-guide.md)
+![完整 CRM 项目列表](docs/screenshots/08-projects.png)
 
-录屏由本候选业务代码在独立本机环境运行产生，按实际时间录制，只增加讲解字幕。模型响应和图片均为 Mock/程序合成；页面状态来自 API、数据库和独立 Worker。视频不是模型效果评测。
+![销售明细与合成业务数据](docs/screenshots/03-sales.png)
 
-## 三个可复核的技术点
+全部界面截图及模块说明见 **[页面截图集](docs/screenshots.md)**。所有截图均来自实际运行的应用，界面上显示的客户、供应商、员工、单据和金额均为合成数据。
 
-| 技术点 | 直接证据 |
-|---|---|
-| 权限在查询与回写两端生效 | [实现](backend/app/services/access_control_service.py#L27) · [复现测试](tests/test_access_and_api.py#L27) |
-| 用租约与执行代次隔离迟到 Worker | [实现](backend/app/services/source_task_functions.py#L154) · [复现测试](tests/test_postgres_reliability.py#L158) |
-| 解释必须受证据契约与当前版本约束 | [实现](backend/app/services/evidence_contract.py#L416) · [复现测试](tests/test_diagnosis_boundaries.py#L81) |
+## 快速启动
 
-[架构与关键时序](docs/architecture.md) · [三个设计取舍](docs/design-decisions.md) · [简历主张与证据](docs/resume-evidence.md)
+需要 Docker Compose v2。第一次启动会构建原有 React 界面，执行完整 Alembic 迁移并初始化演示业务数据。
 
-## 启动与演示
-
-需要 Docker Engine、Compose 2.24.4+；首次构建需要访问依赖源，依赖镜像已锁定内容摘要。在项目根目录执行：
-
-```sh
-docker compose --profile app up -d --build api worker --wait
-```
-
-打开 **http://127.0.0.1:18130**。首次启动自动执行迁移与合成种子；已有工作流数据会保留。请先确保默认演示端口未占用；另建 Compose 项目时也需分别覆盖宿主机端口。
-
-| 演示账号 | 范围 |
-|---|---|
-| demo_admin | 全部六个合成库存案件 |
-| demo_east | 东仓四案，可诊断和复检 |
-| demo_viewer | 东仓四案，只读 |
-
-统一演示密码：`LocalDemo-2026!`，仅用于本机隔离环境。停止：`docker compose --profile app stop`。恢复与删除专用数据卷的区别、开发方式及端口见 [完整运行手册](docs/runbook.md)。
-
-推荐路径：管理员 → DEMO-CASE-001 → 正常诊断 → 查看引用 → 证据不足 → 未知引用失败 → 切换 demo_viewer 查看权限收缩。
-
-[正常／失败场景与预期](docs/demo-scenarios.md) 说明每一步输入、操作和结果判定，不用 HTTP 200 代替业务成功。
-
-## 已实际验证
-
-2026-11-03 阶段五：**33 项后端回归，另有 6 组浏览器场景，最终无失败或跳过。** 已通过干净检出、新数据卷、重复种子和再次新卷重建。阶段六只新增展示文档与媒体，业务实现保持阶段五版本；录屏路径另外实际执行。
-
-[可携带的脱敏验收摘要](docs/assets/acceptance-summary.json) · [测试口径与命令](docs/evaluation.md) · [阶段五详细说明](docs/phase5-acceptance.md)
-
-```sh
-uv venv --python 3.12
-uv pip install -r backend/requirements-dev.lock playwright==1.58.0
-.venv/bin/python demo/run_checks.py
-```
-
-前述命令执行后端测试，需要专用测试端口空闲；完整离线运行策略、浏览器与空卷复现入口见 [evaluation.md](docs/evaluation.md)。不声称首次下载“五分钟启动”。GitHub Actions 状态见页首徽章；各次运行的实际结果与过滤摘要见 Actions。本地历史验收与远程执行分别记录。
-
-## 版本、数据与许可
-
-这是用于招聘展示的脱敏切片，公开源码、合成数据、设计说明与 Mock 演示。源快照、逐字复用／展示适配与后续未同步能力见 [版本边界](docs/version-scope.md)。
-
-本版没有通用工具规划器、MCP、混合检索或自动修改库存。展示的是确定性证据驱动的受控 AI 诊断；租约隔离本地回写，不能保证外部模型调用和收费严格一次。
-
-数据、账号与商品均为固定合成样本，未复制生产导出，见 [脱敏记录](docs/redaction.md)。上游未携带 LICENSE/COPYING/NOTICE；未额外授予开源许可。依赖保留各自许可，详见 [来源与许可边界](docs/licensing.md) 和 [第三方声明](THIRD_PARTY_NOTICES.md)。本次发布保留原有权利，未新增开源许可证；公开可读不等于授予任意再分发许可。
-
-## 发布与复现
-
-```sh
+```bash
 git clone https://github.com/wenzuowei333/enterprise-business-agent.git
 cd enterprise-business-agent
-git checkout v0.1.0-showcase
+docker compose -f docker-compose.demo.yml up -d --build --wait
 ```
 
-[发布范围与验证方式](docs/publication.md) · [下载录屏](https://github.com/wenzuowei333/enterprise-business-agent/releases/download/v0.1.0-showcase/demo.mp4)。录屏与测试为 Mock 工作流证据，不代表真实模型质量。
+打开 **http://127.0.0.1:18210**。账号 `demo_admin`，密码 `LocalDemo-2026!`；另有同密码的 `demo_sales`、`demo_manager`、`demo_viewer` 可对照角色权限。账号仅供本机演示。
+
+演示库含 30 个虚构客户、8 种商品、4 个供应商、90 条销售、24 条采购、16 条库存，以及 CRM 项目、任务、跟进、线索和审批。种子可重复执行，会保留已经操作的业务数据。
+
+```bash
+# 验证完整应用的规则扫描、独立 Worker 和本地 Mock 诊断
+python3 demo/full_smoke.py
+# 关闭本演示；加 -v 才会清空专用演示卷
+docker compose -f docker-compose.demo.yml down
+```
+
+根目录 `docker-compose.yml`、`backend/Dockerfile` 与 `deploy/` 保留的是已脱敏的原部署模板。招聘展示请使用上面的 `docker-compose.demo.yml` 与 `Dockerfile.demo`；原始运维主机、组织标识、品牌素材、内部报告和生产文件不随展示版发布。
+
+## 技术与 AI 边界
+
+FastAPI / SQLAlchemy / PostgreSQL / Alembic；React / TypeScript / Vite / Tailwind / Recharts；Android Compose / Room。保留业务接口、权限及审计链路，AI 是完整业务平台中的一个模块。
+
+默认使用仓库内的 **本地 Mock Provider**，诊断通过真实数据库队列和独立 Worker 执行。Mock 文本明确标识演示性质；外部 Provider 的实现保留，演示配置没有真实 Key。自动修复写入、外部执行沙箱等高风险能力默认关闭，代码与原有契约测试可查阅。没有用固定文本冒充真实模型质量或简历后续版本的生产统计。
+
+## 版本与来源
+
+本版从此前锁定的 GitHub 完整应用快照恢复业务模块；新增中立标识、完整合成种子、独立演示入口和截图，保留原源码中的业务结构。所选源快照早于简历后续维护月份，尚未推送的本地更新不在本版中。
+
+旧版 `v0.1.0-showcase` 仍保留，记录此前精简库存诊断演示及录屏；本版 `v0.2.0-full-project` 用于完整项目招聘展示。模块覆盖及文件变化记录见 [modules](docs/modules.md) 和 [source coverage](docs/source-coverage-full.json)。
+
+原有权利与第三方许可继续保留，本仓库没有额外授予 MIT/Apache 许可。[第三方依赖清单](docs/dependency-licenses-full.json) 包含完整应用环境；依赖的许可声明随依赖和构建产物保留。

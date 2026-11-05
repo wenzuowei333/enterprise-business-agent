@@ -1,0 +1,43 @@
+import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
+
+const app = readFileSync(resolve("src/App.tsx"), "utf8");
+const styles = readFileSync(resolve("src/styles.css"), "utf8");
+const overlayStack = readFileSync(resolve("src/components/ui/overlay-stack.tsx"), "utf8");
+const main = readFileSync(resolve("src/main.tsx"), "utf8");
+const packageJson = JSON.parse(readFileSync(resolve("package.json"), "utf8"));
+const drawerStart = app.indexOf("export function Drawer(");
+const drawerEnd = app.indexOf("function SettingsPage", drawerStart);
+const drawer = app.slice(drawerStart, drawerEnd);
+
+assert.equal((app.match(/<Drawer/g) ?? []).length, 46, "All drawer render sites must remain on the shared Drawer component");
+assert.ok(drawerStart >= 0 && drawerEnd > drawerStart, "Shared Drawer must remain exportable for isolated browser tests");
+assert.ok(app.includes('const DRAWER_DEFAULT_VIEWPORT_RATIO = 0.78;'), "Desktop drawer must default to the wider 78vw target");
+assert.ok(app.includes('const DRAWER_MIN_WIDTH = 720;'), "Desktop drawer must enforce the 720px minimum");
+assert.ok(app.includes('const DRAWER_VIEWPORT_GUTTER = 24;'), "Maximum width must preserve the 24px viewport gutter");
+assert.ok(drawer.includes("setPointerCapture") && drawer.includes("releasePointerCapture"), "Resize must use pointer capture and release it");
+assert.ok(drawer.includes("onPointerCancel={endResize}") && drawer.includes("onLostPointerCapture={finishResizeAfterLostCapture}"), "Resize cleanup must cover cancelled and lost pointer capture");
+assert.ok(drawer.includes('role="separator"') && drawer.includes('aria-orientation="vertical"'), "Resize handle must expose separator semantics");
+assert.ok(drawer.includes('event.key === "ArrowLeft"') && drawer.includes('event.key === "End"'), "Resize handle must support keyboard sizing");
+assert.ok(drawer.includes("readStoredDrawerWidth") && drawer.includes("persistDrawerWidth") && app.includes('project.drawer.width.v1'), "Drawer width must persist through the versioned preference key");
+assert.ok(drawer.includes("<OverlayPortal>") && drawer.includes("overlayLayer.isTop"), "Drawer must render through the shared top-aware overlay stack");
+assert.ok(!drawer.includes('window.addEventListener("keydown"'), "Drawer must not install an instance-level Escape listener");
+assert.ok(!styles.includes("max-w-[min(1120px,100vw)]"), "Legacy fixed 1120px maximum must stay removed");
+assert.ok(styles.includes("container-name: project-drawer") && styles.includes("container-type: inline-size"), "Drawer must be an inline-size query container");
+assert.ok(styles.includes('@container project-drawer (min-width: 1098px)'), "Drawer split layout must account for the bordered panel content box");
+assert.ok(styles.includes('[class*="xl:grid-cols-"]'), "Legacy viewport grid utilities must be guarded by drawer container width");
+assert.ok(styles.includes('[class~="xl:grid-cols-4"]'), "Legacy simple viewport grids must retain the two-column intermediate layout");
+assert.ok(styles.includes("overflow-y-auto overflow-x-hidden"), "Drawer body must not own horizontal table scrolling");
+assert.ok(styles.includes("@media (max-width: 1023px)") && styles.includes("width: 100vw !important"), "Tablet and mobile drawers must be fixed to the viewport");
+assert.ok(main.includes("<OverlayStackProvider>"), "Application root must provide the shared overlay stack");
+assert.equal((overlayStack.match(/window\.addEventListener\("keydown"/g) ?? []).length, 1, "Overlay stack must own the only global Escape listener");
+assert.ok(overlayStack.includes('event.key !== "Tab"'), "Overlay stack must trap focus in the top panel");
+assert.ok(overlayStack.includes('"summary"') && overlayStack.includes("getClientRects().length > 0"), "Focus trap must include native summaries and skip CSS-hidden controls");
+assert.ok(overlayStack.includes('appRoot.inert = true') && overlayStack.includes('body.style.position = "fixed"'), "Overlay stack must make and keep the background inert");
+assert.ok(overlayStack.includes("createPortal(children, document.body)"), "Overlays must escape transformed parent stacking contexts");
+assert.equal(packageJson.scripts["test:assertions"], "node scripts/run-assertions.mjs", "Assertion runner must be cross-platform");
+assert.equal(packageJson.scripts["test:e2e"], "playwright test", "Package must expose the browser regression command");
+assert.ok(packageJson.scripts.build.includes("normalize-built-index.mjs"), "Production builds must normalize generated HTML line endings");
+
+console.log("Resizable drawer source contract passed.");

@@ -1,12 +1,27 @@
 from __future__ import annotations
+
 from datetime import date, datetime
 from decimal import Decimal
-from sqlalchemy import Boolean, CheckConstraint, Date, DateTime, ForeignKey, Index, Integer, Numeric, String, Text, UniqueConstraint, false, func, text
-from sqlalchemy import JSON
-from sqlalchemy.dialects.postgresql import JSONB as PostgreSQLJSONB
 
-JSONB = JSON().with_variant(PostgreSQLJSONB(), 'postgresql')
+from sqlalchemy import (
+    Boolean,
+    CheckConstraint,
+    Date,
+    DateTime,
+    ForeignKey,
+    Index,
+    Integer,
+    Numeric,
+    String,
+    Text,
+    UniqueConstraint,
+    false,
+    func,
+    text,
+)
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
+
 from app.core.database import Base
 from app.models.identity import TimestampMixin
 
@@ -109,8 +124,24 @@ class ExceptionDiagnosisJob(Base, TimestampMixin):
         ForeignKey("users.id", ondelete="SET NULL"), index=True
     )
     error_message: Mapped[str | None] = mapped_column(Text)
-    # New showcase field: the explicitly selected Mock scenario, not production data.
-    demo_scenario: Mapped[str] = mapped_column(String(40), nullable=False, default="success", server_default="success")
+
+
+class ExceptionBackgroundJob(Base, TimestampMixin):
+    __tablename__ = "exception_background_job"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    job_no: Mapped[str] = mapped_column(String(120), unique=True, nullable=False, index=True)
+    job_type: Mapped[str] = mapped_column(String(40), nullable=False, index=True)
+    payload_json: Mapped[dict | None] = mapped_column(JSONB)
+    status: Mapped[str] = mapped_column(String(40), nullable=False, default="queued", index=True)
+    attempts: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    available_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), index=True)
+    lease_owner: Mapped[str | None] = mapped_column(String(160), index=True)
+    lease_expires_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), index=True)
+    started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), index=True)
+    completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), index=True)
+    error_message: Mapped[str | None] = mapped_column(Text)
+    dedupe_key: Mapped[str | None] = mapped_column(String(160), unique=True, index=True)
 
 
 class ExceptionDiagnosis(Base, TimestampMixin):
@@ -164,6 +195,30 @@ class ExceptionDiagnosis(Base, TimestampMixin):
     feedback_note: Mapped[str | None] = mapped_column(Text)
     feedback_by_user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"), index=True)
     feedback_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), index=True)
+
+
+class ExceptionAction(Base, TimestampMixin):
+    __tablename__ = "exception_action"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    action_no: Mapped[str] = mapped_column(String(120), unique=True, nullable=False, index=True)
+    case_id: Mapped[int] = mapped_column(ForeignKey("exception_case.id", ondelete="CASCADE"), nullable=False, index=True)
+    action_type: Mapped[str] = mapped_column(String(100), nullable=False, index=True)
+    status: Mapped[str] = mapped_column(String(40), nullable=False, default="validated", index=True)
+    allowed: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False, index=True)
+    blockers_json: Mapped[list | None] = mapped_column(JSONB)
+    parameters_json: Mapped[dict | None] = mapped_column(JSONB)
+    impact_json: Mapped[dict | None] = mapped_column(JSONB)
+    evidence_version: Mapped[str] = mapped_column(String(128), nullable=False, index=True)
+    validation_token_hash: Mapped[str | None] = mapped_column(String(128), unique=True, index=True)
+    validation_expires_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), index=True)
+    idempotency_key: Mapped[str | None] = mapped_column(String(160), unique=True, index=True)
+    requested_by_user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"), index=True)
+    result_json: Mapped[dict | None] = mapped_column(JSONB)
+    verification_json: Mapped[dict | None] = mapped_column(JSONB)
+    error_message: Mapped[str | None] = mapped_column(Text)
+    started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), index=True)
+    completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), index=True)
 
 
 class ExceptionEvent(Base):

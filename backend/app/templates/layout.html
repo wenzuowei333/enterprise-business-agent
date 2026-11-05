@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ title or "管理中心" }}</title>
+    <link rel="icon" href="data:,">
+    <link rel="stylesheet" href="/static/css/app.css?v=20260624-multipage">
+  </head>
+  {% set path = request.url.path %}
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div class="sidebar-brand">
+          <div class="brand-mark">E</div>
+          <div>
+            <p class="brand-title">管理中心</p>
+            <p class="brand-subtitle">Management Center</p>
+          </div>
+        </div>
+
+        <div class="nav-section-title">MAIN MENU</div>
+        <nav class="nav">
+          <a class="{% if path.startswith('/dashboard') or path == '/' %}active{% endif %}" href="/dashboard">
+            <span class="nav-icon">▦</span>
+            <span class="nav-meta"><strong>底座状态</strong><span>工程、权限和主数据</span></span>
+            <span class="nav-chevron">⌄</span>
+          </a>
+          {% if user.role in ["admin", "data_middle_office"] %}
+          <a class="{% if path.startswith('/imports') %}active{% endif %}" href="/imports">
+            <span class="nav-icon">▧</span>
+            <span class="nav-meta"><strong>文件导入</strong><span>员工、客户、商品、供应商</span></span>
+            <span class="nav-chevron">⌄</span>
+          </a>
+          {% endif %}
+          <a class="{% if path.startswith('/master-data') %}active{% endif %}" href="/master-data">
+            <span class="nav-icon">▣</span>
+            <span class="nav-meta"><strong>主数据</strong><span>档案查询和基础台账</span></span>
+            <span class="nav-chevron">⌄</span>
+          </a>
+          {% if user.role in ["admin", "boss", "data_middle_office"] %}
+          <a class="{% if path.startswith('/authority') %}active{% endif %}" href="/authority">
+            <span class="nav-icon">▤</span>
+            <span class="nav-meta"><strong>权根中心</strong><span>角色、权限和审计</span></span>
+            <span class="nav-chevron">⌄</span>
+          </a>
+          {% endif %}
+          {% if user.role == "admin" %}
+          <a class="{% if path.startswith('/settings') %}active{% endif %}" href="/settings">
+            <span class="nav-icon">⚙</span>
+            <span class="nav-meta"><strong>系统设置</strong><span>运行配置和安全状态</span></span>
+            <span class="nav-chevron">⌄</span>
+          </a>
+          {% endif %}
+        </nav>
+
+        <div class="sidebar-card sidebar-action-card">
+          <div class="mini-title">管理中心</div>
+          <h3>主数据与权限管理</h3>
+          <p>集中管理账号、权限、导入和基础档案。</p>
+          <div class="sidebar-card-actions">
+            <a class="sidebar-primary-action" href="/imports">上传主数据</a>
+            <a class="sidebar-secondary-action" href="/master-data">查看档案</a>
+          </div>
+        </div>
+
+        <div class="sidebar-footer">
+          <b>当前账号</b>
+          <p>{{ user.real_name }} · {{ user.role }}</p>
+          <div class="sidebar-footer-actions">
+            <a href="/settings">系统设置</a>
+            <a href="/logout">退出</a>
+          </div>
+        </div>
+      </aside>
+
+      <main class="main">
+        <div class="container">
+          {% block content %}{% endblock %}
+        </div>
+      </main>
+    </div>
+    {% block scripts %}{% endblock %}
+  </body>
+</html>

@@ -1,10 +1,21 @@
-FROM python:3.12-slim@sha256:b18b261e1b4974b4f321451ad5251ded85abb22c2b8b262da527dda1d031ab30
-ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 PYTHONPATH=/workspace:/workspace/backend
-WORKDIR /workspace/backend
-COPY backend/requirements.lock ./
-RUN pip install --no-cache-dir -r requirements.lock
-RUN groupadd --system app && useradd --system --gid app --home /workspace app && chown -R app:app /workspace
-COPY --chown=app:app backend/ ./
-COPY --chown=app:app demo/ /workspace/demo/
-USER app
-CMD ["python", "-m", "demo.seed", "--export-only"]
+FROM python:3.12-slim
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
+
+WORKDIR /app
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends build-essential curl \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY app ./app
+COPY alembic.ini ./alembic.ini
+COPY alembic ./alembic
+
+EXPOSE 8000
+
+CMD ["gunicorn", "app.main:app", "--worker-class", "uvicorn.workers.UvicornWorker", "--workers", "2", "--bind", "0.0.0.0:8000", "--timeout", "120"]

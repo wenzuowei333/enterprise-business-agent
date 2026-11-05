@@ -1,0 +1,71 @@
+{% extends "layout.html" %}
+{% block content %}
+<section class="section settings-hero">
+  <div class="section-header">
+    <div>
+      <p class="eyebrow">SYSTEM CONTROL</p>
+      <h1>系统设置</h1>
+      <div class="muted">这里放运行配置、服务状态和安全入口。业务数据、导入和权根规则已经拆到独立页面。</div>
+    </div>
+    <div class="actions">
+      <a class="button secondary" href="/authority">权根中心</a>
+      <a class="button secondary" href="/api/docs" target="_blank" rel="noopener">API 文档</a>
+    </div>
+  </div>
+
+  <div class="settings-kpi-grid">
+    <div class="settings-kpi"><span>环境</span><strong>{{ settings.environment }}</strong><small>{{ settings.app_version }}</small></div>
+    <div class="settings-kpi"><span>用户</span><strong>{{ stats.users }}</strong><small>启用账号</small></div>
+    <div class="settings-kpi"><span>角色</span><strong>{{ stats.roles }}</strong><small>权限基础</small></div>
+    <div class="settings-kpi"><span>审计</span><strong>{{ stats.audit_logs }}</strong><small>操作追溯</small></div>
+  </div>
+</section>
+
+<section class="section settings-grid-main">
+  <article class="settings-panel">
+    <div class="panel-title compact"><h2>运行状态</h2><span>Runtime</span></div>
+    <div class="rule-list">
+      <div><span>应用名称</span><strong>管理中心</strong></div>
+      <div><span>应用版本</span><strong>{{ settings.app_version }}</strong></div>
+      <div><span>Token 时长</span><strong>{{ settings.access_token_expire_minutes }} 分钟</strong></div>
+      <div><span>上传目录</span><strong>已配置</strong></div>
+    </div>
+  </article>
+
+  <article class="settings-panel">
+    <div class="panel-title compact"><h2>模块边界</h2><span>Pages</span></div>
+    <div class="tool-grid compact-tools">
+      <a href="/dashboard">底座状态</a>
+      <a href="/imports">文件导入</a>
+      <a href="/master-data">主数据中心</a>
+      <a href="/authority">权根中心</a>
+    </div>
+    <p>当前前端采用多页面管理结构，集中承载主数据、权限、导入和系统配置。</p>
+  </article>
+</section>
+
+<section class="section panel">
+  <div class="panel-heading">
+    <div><h2>最近审计</h2><p class="muted">展示最近 12 条操作记录。</p></div>
+    <a class="button secondary compact" href="/authority#audit">查看完整列表</a>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>ID</th><th>动作</th><th>资源</th><th>资源 ID</th><th>时间</th></tr></thead>
+      <tbody>
+        {% for item in latest_audits %}
+        <tr>
+          <td>{{ item.id }}</td>
+          <td>{{ item.action_type }}</td>
+          <td>{{ item.resource_type }}</td>
+          <td>{{ item.resource_id or "-" }}</td>
+          <td>{{ item.created_at }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="5" class="muted">暂无审计日志。</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

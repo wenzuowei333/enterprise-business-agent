@@ -1,0 +1,147 @@
+{
+  "date": "2026-11-05",
+  "actual_application": true,
+  "synthetic_data_only": true,
+  "screenshots": [
+    {
+      "file": "docs/screenshots/01-dashboard.png",
+      "page": "/dashboard",
+      "label": "经营工作台",
+      "sha256": "af34a61a7f0df1154b0b3766208c902e1e9b65ffc94e6768c9679fdbb3e6fe7a",
+      "viewport": [
+        1600,
+        1050
+      ]
+    },
+    {
+      "file": "docs/screenshots/02-customers.png",
+      "page": "/master-data?kind=customers",
+      "label": "客户主数据",
+      "sha256": "b9383ceb90dd7f03735b9ce4c0d1c4405fbb93b9f838af00dd4c2810c745cb1a",
+      "viewport": [
+        1600,
+        1050
+      ]
+    },
+    {
+      "file": "docs/screenshots/03-sales.png",
+      "page": "/sales",
+      "label": "销售明细",
+      "sha256": "fcb9315abc8c55f0d143ade8e4531752aa8a5405a34c9559edf82da776501ddb",
+      "viewport": [
+        1600,
+        1050
+      ]
+    },
+    {
+      "file": "docs/screenshots/04-inventory.png",
+      "page": "/inventory",
+      "label": "库存快照",
+      "sha256": "c6c3df6875a281952f62a1ff9ef95085f15e1e654d43be76b9cdc997536d275d",
+      "viewport": [
+        1600,
+        1050
+      ]
+    },
+    {
+      "file": "docs/screenshots/05-purchase.png",
+      "page": "/purchase",
+      "label": "采购明细",
+      "sha256": "bfbc7b48289804ad095fde915d426053aa3476d751a0570bd544234ccd640a27",
+      "viewport": [
+        1600,
+        1050
+      ]
+    },
+    {
+      "file": "docs/screenshots/06-account-balance.png",
+      "page": "/account-balance",
+      "label": "往来对账",
+      "sha256": "ca396907731b18f51cb17c176f82ba26c5c868bc180623e9fc78bdb5d3f5502b",
+      "viewport": [
+        1600,
+        1050
+      ]
+    },
+    {
+      "file": "docs/screenshots/07-crm.png",
+      "page": "/crm",
+      "label": "客户 CRM",
+      "sha256": "cd23ed1f4ebac0f7271203c8296f7940a0160d59afcb7a3083e0bf5bbb24b6eb",
+      "viewport": [
+        1600,
+        1050
+      ]
+    },
+    {
+      "file": "docs/screenshots/08-projects.png",
+      "page": "/crm/projects",
+      "label": "客户项目",
+      "sha256": "aa5007f0e934a2211827277c628742993642c74c47e5986e091266bc9dc235fa",
+      "viewport": [
+        1600,
+        1050
+      ]
+    },
+    {
+      "file": "docs/screenshots/09-leads.png",
+      "page": "/crm/leads",
+      "label": "客户开发",
+      "sha256": "1add7346bf18073a548a5d35504e7b6e88d1c45f352e66dd054f7febbf27cc94",
+      "viewport": [
+        1600,
+        1050
+      ]
+    },
+    {
+      "file": "docs/screenshots/10-tasks.png",
+      "page": "/crm/tasks",
+      "label": "客户任务",
+      "sha256": "f0d9a770b31e410d51c7bc472ecaa9ee0c3c5fe779eb9f06ed4255758fb188b4",
+      "viewport": [
+        1600,
+        1050
+      ]
+    },
+    {
+      "file": "docs/screenshots/11-approvals.png",
+      "page": "/crm/work",
+      "label": "执行与审批",
+      "sha256": "554da210f2fc27b01db51824f2251aa0e9b842d49380d1d3182b4230fed5bdf6",
+      "viewport": [
+        1600,
+        1050
+      ]
+    },
+    {
+      "file": "docs/screenshots/12-exceptions.png",
+      "page": "/exceptions",
+      "label": "异常与 AI",
+      "sha256": "41bb5176298e835a8799a0be9dad47f5cfa6bfe388c047281cb78ee70a0ccee9",
+      "viewport": [
+        1600,
+        1050
+      ]
+    },
+    {
+      "file": "docs/screenshots/13-users.png",
+      "page": "/users",
+      "label": "账号与权限",
+      "sha256": "e8fdb3122e96bee28feb26a63896cd0b5eb09aa0ca805abb110bff0c1d51c4a0",
+      "viewport": [
+        1600,
+        1050
+      ]
+    },
+    {
+      "file": "docs/screenshots/14-image-tools.png",
+      "page": "/image-tools",
+      "label": "图片处理",
+      "sha256": "bbd76e6c2cd8dc1461f4155ce86e20c242fe0ebec4534369defe1a3d4902ac36",
+      "viewport": [
+        1600,
+        1050
+      ]
+    }
+  ]
+}

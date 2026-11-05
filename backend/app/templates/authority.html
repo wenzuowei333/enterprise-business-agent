@@ -1,0 +1,105 @@
+{% extends "layout.html" %}
+{% block content %}
+<section class="section authority-hero">
+  <div class="section-header">
+    <div>
+      <p class="eyebrow">AUTHORITY ROOT</p>
+      <h1>权根中心</h1>
+      <div class="muted">角色、权限、数据范围、字段权限、审批规则和审计日志按权根思想统一约束。</div>
+    </div>
+    <div class="actions">
+      <a class="button secondary" href="/settings">系统设置</a>
+      <a class="button secondary" href="/dashboard">底座状态</a>
+    </div>
+  </div>
+
+  <div class="metric-grid dashboard-metrics compact">
+    <a href="#roles"><span>角色</span><strong>{{ stats.roles }}</strong><small>roles</small></a>
+    <a href="#permissions"><span>权限</span><strong>{{ stats.permissions }}</strong><small>permissions</small></a>
+    <a href="#rules"><span>权根规则</span><strong>{{ stats.authority_root_rules }}</strong><small>root rules</small></a>
+    <a href="#audit"><span>审计</span><strong>{{ stats.audit_logs }}</strong><small>audit logs</small></a>
+  </div>
+</section>
+
+<section class="section page-grid">
+  <article id="roles" class="panel">
+    <div class="panel-heading"><h2>角色</h2><span class="view-chip">{{ roles|length }} 个</span></div>
+    <div class="card-list">
+      {% for role in roles %}
+      <div class="list-card">
+        <div><strong>{{ role.role_name }}</strong><span>{{ role.role_code }}</span></div>
+        <p>{{ role.description or "暂无说明" }}</p>
+      </div>
+      {% else %}
+      <div class="muted padded">暂无角色。</div>
+      {% endfor %}
+    </div>
+  </article>
+
+  <article id="permissions" class="panel">
+    <div class="panel-heading"><h2>权限</h2><span class="view-chip">{{ permissions|length }} 项</span></div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>权限码</th><th>资源</th><th>动作</th></tr></thead>
+        <tbody>
+          {% for permission in permissions %}
+          <tr><td>{{ permission.permission_code }}</td><td>{{ permission.resource_type }}</td><td>{{ permission.action_type }}</td></tr>
+          {% else %}
+          <tr><td colspan="3" class="muted">暂无权限。</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </article>
+</section>
+
+<section id="rules" class="section panel">
+  <div class="panel-heading">
+    <div><h2>权根规则</h2><p class="muted">定义谁可以对什么资源做什么动作，是否需要审批。</p></div>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>规则</th><th>资源</th><th>动作</th><th>角色</th><th>审批</th><th>状态</th></tr></thead>
+      <tbody>
+        {% for rule in authority_rules %}
+        <tr>
+          <td><strong>{{ rule.rule_name }}</strong><div class="muted">{{ rule.rule_code }}</div></td>
+          <td>{{ rule.resource_type }}</td>
+          <td>{{ rule.action_type }}</td>
+          <td><div class="tag-list">{% for role in rule.allowed_roles %}<span class="tag">{{ role }}</span>{% endfor %}</div></td>
+          <td>{{ "需要" if rule.requires_approval else "不需要" }}</td>
+          <td><span class="badge {{ 'ok' if rule.is_active else 'bad' }}">{{ "启用" if rule.is_active else "停用" }}</span></td>
+        </tr>
+        {% else %}
+        <tr><td colspan="6" class="muted">暂无权根规则。</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section id="audit" class="section panel">
+  <div class="panel-heading">
+    <div><h2>最近审计</h2><p class="muted">展示最近 30 条操作记录。</p></div>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>ID</th><th>角色</th><th>动作</th><th>资源</th><th>资源 ID</th><th>时间</th></tr></thead>
+      <tbody>
+        {% for item in audit_logs %}
+        <tr>
+          <td>{{ item.id }}</td>
+          <td>{{ item.role_code or "-" }}</td>
+          <td>{{ item.action_type }}</td>
+          <td>{{ item.resource_type }}</td>
+          <td>{{ item.resource_id or "-" }}</td>
+          <td>{{ item.created_at }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="6" class="muted">暂无审计日志。</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,11 @@
+[Unit]
+Description=Sample Handmade ERP Exception Dark Deployment Every Five Minutes
+
+[Timer]
+OnCalendar=*-*-* *:00/5:00
+AccuracySec=30s
+Persistent=true
+Unit=enterprise-business-agent-exception-observer.service
+
+[Install]
+WantedBy=timers.target

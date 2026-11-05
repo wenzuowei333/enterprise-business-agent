@@ -1,23 +1,28 @@
-"""Model base only. Engines are created explicitly by migration/seed commands."""
-from sqlalchemy import MetaData
-from sqlalchemy.orm import DeclarativeBase
+from collections.abc import Generator
+
+from sqlalchemy import create_engine, text
+from sqlalchemy.orm import DeclarativeBase, Session, sessionmaker
+
+from app.core.config import settings
 
 
 class Base(DeclarativeBase):
-    metadata = MetaData(naming_convention={
-        "ix": "ix_%(column_0_label)s", "uq": "uq_%(table_name)s_%(column_0_name)s",
-        "fk": "fk_%(table_name)s_%(column_0_name)s_%(referred_table_name)s",
-        "pk": "pk_%(table_name)s",
-    })
+    pass
 
 
-def build_session_factory(database_url=None):
-    from sqlalchemy import create_engine
-    from sqlalchemy.orm import sessionmaker
-    from app.core.config import settings
-    engine = create_engine(database_url or settings.database_url, pool_pre_ping=True)
-    return sessionmaker(bind=engine, expire_on_commit=False)
+engine = create_engine(settings.database_url, pool_pre_ping=True)
+SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False)
 
 
-# Instantiation creates no connection. No schema or data changes on app import.
-SessionLocal = build_session_factory()
+def get_db() -> Generator[Session, None, None]:
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+
+def check_database() -> bool:
+    with engine.connect() as conn:
+        conn.execute(text("select 1"))
+    return True

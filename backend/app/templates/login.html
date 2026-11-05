@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>登录 · 管理中心</title>
+    <link rel="icon" href="data:,">
+    <link rel="stylesheet" href="/static/css/app.css?v=20260624-multipage">
+  </head>
+  <body class="login-body">
+    <main class="login-shell">
+      <section class="login-panel">
+        <div class="login-brand">
+          <div class="brand-mark">E</div>
+          <div>
+            <p class="brand-title dark">管理中心</p>
+            <p class="brand-subtitle dark">Management Center</p>
+          </div>
+        </div>
+
+        <div class="login-card">
+          <div class="auth-logo large">E</div>
+          <div class="login-card-head">
+            <span>MANAGEMENT CENTER</span>
+            <h1>登录管理中心</h1>
+          </div>
+          {% if error %}
+          <div class="login-error">{{ error }}</div>
+          {% endif %}
+          <form method="post" action="/login" class="login-form">
+            <input type="hidden" name="next" value="{{ next }}">
+            <div class="glass-field">
+              <label>账号</label>
+              <div class="glass-input">
+                <span class="field-icon">@</span>
+                <input name="username" value="{{ username or '' }}" autocomplete="username" required autofocus>
+              </div>
+            </div>
+            <div class="glass-field">
+              <label>密码</label>
+              <div class="glass-input">
+                <span class="field-icon">#</span>
+                <input id="loginPassword" type="password" name="password" autocomplete="current-password" required>
+                <button id="togglePassword" class="icon-button" type="button" aria-label="显示或隐藏密码">◎</button>
+              </div>
+            </div>
+            <button type="submit" class="glass-login-button"><span>进入系统</span><span class="button-arrow">→</span></button>
+          </form>
+          <div class="login-footnote">
+            <span>角色权限自动识别</span>
+            <a href="/login">忘记密码请联系管理员</a>
+          </div>
+        </div>
+      </section>
+
+      <section class="login-hero" aria-label="管理中心登录视觉">
+        <div class="login-gradient-layer"></div>
+        <div class="login-top-brand"><div class="auth-logo">E</div><span>管理中心</span></div>
+        <div class="login-visual-card primary">权根</div>
+        <div class="login-visual-card secondary">主数据</div>
+        <div class="login-visual-card soft">导入批次</div>
+        <div class="login-visual-panel">
+          <span></span>
+          <span></span>
+          <span></span>
+          <div class="visual-toggle on"></div>
+          <div class="visual-toggle"></div>
+        </div>
+      </section>
+    </main>
+    <script>
+      const togglePassword = document.getElementById("togglePassword");
+      const loginPassword = document.getElementById("loginPassword");
+      if (togglePassword && loginPassword) {
+        togglePassword.addEventListener("click", () => {
+          const hidden = loginPassword.type === "password";
+          loginPassword.type = hidden ? "text" : "password";
+          togglePassword.textContent = hidden ? "◌" : "◎";
+        });
+      }
+    </script>
+  </body>
+</html>

@@ -1,0 +1,71 @@
+name: portfolio-erp-full
+x-demo-env: &demo-env
+  ENVIRONMENT: demo
+  DATABASE_URL: postgresql+psycopg://portfolio_demo:local-demo-only@db:5432/erp_full_demo
+  INITIAL_ADMIN_USERNAME: demo_admin
+  INITIAL_ADMIN_PASSWORD: LocalDemo-2026!
+  INITIAL_ADMIN_REAL_NAME: 演示管理员
+  JWT_SECRET: full-project-local-demo-only-secret-2026
+  UPLOAD_ROOT: /workspace/runtime/uploads
+  HERMES_API_BASE_URL: http://mock:18209/v1
+  HERMES_API_KEY: local-mock-only
+  HERMES_MODEL: local-mock
+  EXCEPTION_CENTER_ENABLED: 'true'
+  EXCEPTION_AI_ENABLED: 'true'
+  EXCEPTION_AI_CHAT_ENABLED: 'true'
+  EXCEPTION_AI_GLOBAL_ENABLED: 'true'
+  EXCEPTION_AI_CRM_ENABLED: 'true'
+  EXCEPTION_AI_DATA_ENABLED: 'true'
+  EXCEPTION_AI_FINANCE_ENABLED: 'true'
+  EXCEPTION_AI_CASE_ANALYSIS_ENABLED: 'true'
+  EXCEPTION_MANUAL_AI_REQUIRE_PROVIDER_USAGE: 'false'
+  EXCEPTION_WORKER_POLL_SECONDS: '1'
+  EXCEPTION_AI_GLOBAL_ACTIONS_ENABLED: 'false'
+  EXCEPTION_ACTIONS_ENABLED: 'false'
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: portfolio_demo
+      POSTGRES_PASSWORD: local-demo-only
+      POSTGRES_DB: erp_full_demo
+    volumes: [demo_postgres:/var/lib/postgresql/data]
+    healthcheck:
+      test: [CMD-SHELL, pg_isready -U portfolio_demo -d erp_full_demo]
+      interval: 3s
+      timeout: 3s
+      retries: 30
+  mock:
+    image: python:3.12-slim
+    environment:
+      MOCK_BIND: 0.0.0.0
+    volumes: [./demo/mock_provider.py:/app/mock_provider.py:ro]
+    command: [python, /app/mock_provider.py]
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.demo
+    image: portfolio-erp-full:demo
+    environment: *demo-env
+    command: [sh, -c, 'alembic upgrade head && python -m app.demo_seed && uvicorn app.main:app --host 0.0.0.0 --port 8000']
+    ports: ['127.0.0.1:18210:8000']
+    volumes: [demo_uploads:/workspace/runtime/uploads, demo_images:/workspace/runtime/image_jobs]
+    depends_on:
+      db: {condition: service_healthy}
+      mock: {condition: service_started}
+    healthcheck:
+      test: [CMD, python, -c, "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/v1/health',timeout=3)"]
+      interval: 3s
+      timeout: 4s
+      retries: 90
+  exception-ai-worker:
+    image: portfolio-erp-full:demo
+    pull_policy: never
+    environment: *demo-env
+    command: [python, -m, app.tasks.exception_ai_worker]
+    depends_on:
+      backend: {condition: service_healthy}
+volumes:
+  demo_postgres:
+  demo_uploads:
+  demo_images:

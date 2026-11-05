@@ -1,0 +1,82 @@
+{% extends "layout.html" %}
+{% block content %}
+<section class="section hero-section">
+  <div class="section-header">
+    <div>
+      <p class="eyebrow">MANAGEMENT CENTER</p>
+      <h1>管理中心</h1>
+      <div class="muted">统一管理账号权限、主数据导入、审计和经营数据。</div>
+    </div>
+    <div class="actions">
+      <a class="button" href="/imports">上传主数据</a>
+      <a class="button secondary" href="/master-data">查看主数据</a>
+    </div>
+  </div>
+
+  <div class="metric-grid dashboard-metrics">
+    <a href="/settings"><span>用户</span><strong>{{ stats.users }}</strong><small>账号身份</small></a>
+    <a href="/master-data?kind=employees"><span>员工</span><strong>{{ stats.employees }}</strong><small>组织人员</small></a>
+    <a href="/master-data?kind=customers"><span>客户</span><strong>{{ stats.customers }}</strong><small>客户档案</small></a>
+    <a href="/master-data?kind=products"><span>商品</span><strong>{{ stats.products }}</strong><small>商品档案</small></a>
+    <a href="/master-data?kind=suppliers"><span>供应商</span><strong>{{ stats.suppliers }}</strong><small>供应商档案</small></a>
+    <a href="/imports"><span>导入批次</span><strong>{{ stats.import_batches }}</strong><small>上传校验提交</small></a>
+    <a href="/authority"><span>权根规则</span><strong>{{ stats.authority_root_rules }}</strong><small>角色范围审批</small></a>
+    <a href="/authority"><span>审计</span><strong>{{ stats.audit_logs }}</strong><small>操作追踪</small></a>
+  </div>
+</section>
+
+<section class="section page-grid">
+  <article class="panel">
+    <div class="panel-heading">
+      <div>
+        <h2>最近导入</h2>
+        <p class="muted">只显示最近 6 个批次，完整操作进入文件导入页。</p>
+      </div>
+      <a class="button secondary compact" href="/imports">打开导入页</a>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>ID</th><th>类型</th><th>状态</th><th>行数</th><th>成功</th><th>错误</th></tr></thead>
+        <tbody>
+          {% for batch in batches %}
+          <tr>
+            <td>{{ batch.id }}</td>
+            <td>{{ batch.file_type }}</td>
+            <td><span class="badge {{ 'ok' if batch.status == 'committed' else 'warn' }}">{{ batch.status }}</span></td>
+            <td>{{ batch.total_rows }}</td>
+            <td>{{ batch.success_rows }}</td>
+            <td>{{ batch.error_rows }}</td>
+          </tr>
+          {% else %}
+          <tr><td colspan="6" class="muted">暂无导入批次。</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </article>
+
+  <article class="panel">
+    <div class="panel-heading">
+      <div>
+        <h2>主数据样例</h2>
+        <p class="muted">客户、商品和供应商各取 6 条样例。</p>
+      </div>
+      <a class="button secondary compact" href="/master-data">主数据中心</a>
+    </div>
+    <div class="sample-stack">
+      {% for key, label in [("customers", "客户"), ("products", "商品"), ("suppliers", "供应商")] %}
+      <div class="sample-block">
+        <h3>{{ label }}</h3>
+        <div class="tag-list">
+          {% for row in sample[key] %}
+          <span class="tag">{{ row.customer_name if key == "customers" else row.product_name if key == "products" else row.supplier_name }}</span>
+          {% else %}
+          <span class="muted">暂无数据</span>
+          {% endfor %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </article>
+</section>
+{% endblock %}

@@ -1,79 +1,139 @@
-name: portfolio-inventory-stage3
+x-exception-common-environment: &exception-common-environment
+  PYTHONPATH: /app
+  ENVIRONMENT: ${ENVIRONMENT:-production}
+  DATABASE_URL: ${DATABASE_URL:-postgresql+psycopg://project_base:project_base@db:5432/project_base}
+  EXCEPTION_CENTER_ENABLED: ${EXCEPTION_CENTER_ENABLED:-false}
+  EXCEPTION_AI_ENABLED: ${EXCEPTION_AI_ENABLED:-false}
+  EXCEPTION_SCHEDULE_ENABLED: ${EXCEPTION_SCHEDULE_ENABLED:-false}
+  EXCEPTION_ACTIONS_ENABLED: ${EXCEPTION_ACTIONS_ENABLED:-false}
+  EXCEPTION_AI_MAX_RETRIES: ${EXCEPTION_AI_MAX_RETRIES:-2}
+  EXCEPTION_AI_SHUTDOWN_TIMEOUT_SECONDS: ${EXCEPTION_AI_SHUTDOWN_TIMEOUT_SECONDS:-150}
+  EXCEPTION_AI_CONCURRENCY: ${EXCEPTION_AI_CONCURRENCY:-1}
+  EXCEPTION_AI_DAILY_LIMIT: ${EXCEPTION_AI_DAILY_LIMIT:-20}
+  EXCEPTION_AI_SCHEDULED_BATCH_SIZE: ${EXCEPTION_AI_SCHEDULED_BATCH_SIZE:-20}
+  EXCEPTION_MANUAL_AI_DAILY_LIMIT: ${EXCEPTION_MANUAL_AI_DAILY_LIMIT:-20}
+  EXCEPTION_SCHEDULED_AI_DAILY_LIMIT: ${EXCEPTION_SCHEDULED_AI_DAILY_LIMIT:-0}
+  EXCEPTION_SCHEDULED_AI_BATCH_SIZE: ${EXCEPTION_SCHEDULED_AI_BATCH_SIZE:-20}
+  EXCEPTION_AI_CIRCUIT_FAILURE_THRESHOLD: ${EXCEPTION_AI_CIRCUIT_FAILURE_THRESHOLD:-5}
+  EXCEPTION_AI_CIRCUIT_COOLDOWN_SECONDS: ${EXCEPTION_AI_CIRCUIT_COOLDOWN_SECONDS:-900}
+  EXCEPTION_EVIDENCE_MAX_BYTES: ${EXCEPTION_EVIDENCE_MAX_BYTES:-32768}
+  EXCEPTION_EVIDENCE_MAX_TOKENS: ${EXCEPTION_EVIDENCE_MAX_TOKENS:-8000}
+  EXCEPTION_JOB_LEASE_SECONDS: ${EXCEPTION_JOB_LEASE_SECONDS:-300}
+  EXCEPTION_WORKER_POLL_SECONDS: ${EXCEPTION_WORKER_POLL_SECONDS:-5}
+  EXCEPTION_WORKER_HEARTBEAT_SECONDS: ${EXCEPTION_WORKER_HEARTBEAT_SECONDS:-30}
+  EXCEPTION_RUNTIME_HEARTBEAT_SECONDS: ${EXCEPTION_RUNTIME_HEARTBEAT_SECONDS:-30}
+  EXCEPTION_JOB_MAX_ATTEMPTS: ${EXCEPTION_JOB_MAX_ATTEMPTS:-3}
+  EXCEPTION_SCHEDULE_TIMEZONE: ${EXCEPTION_SCHEDULE_TIMEZONE:-Asia/Hong_Kong}
+
+x-exception-runtime: &exception-runtime
+  read_only: true
+  init: true
+  cap_drop:
+    - ALL
+  security_opt:
+    - no-new-privileges:true
+
 services:
-  postgres:
-    image: postgres:16-alpine@sha256:0cefaabd882e42bcb2a2f3dc56d3ce4770560ba62fd7f197f1a2e008fd5731ab
+  db:
+    image: postgres:16
+    restart: unless-stopped
     environment:
-      POSTGRES_DB: inventory_demo
-      POSTGRES_USER: portfolio_demo
-      POSTGRES_PASSWORD: local-demo-only
-    ports:
-      - "127.0.0.1:25434:5432"
+      POSTGRES_DB: ${POSTGRES_DB:-project_base}
+      POSTGRES_USER: ${POSTGRES_USER:-project_base}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-project_base}
     volumes:
-      - demo_postgres:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U portfolio_demo -d inventory_demo"]
-      interval: 2s
-      timeout: 3s
-      retries: 30
-  test-postgres:
-    profiles: ["checks"]
-    image: postgres:16-alpine@sha256:0cefaabd882e42bcb2a2f3dc56d3ce4770560ba62fd7f197f1a2e008fd5731ab
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-project_base} -d ${POSTGRES_DB:-project_base}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+    restart: unless-stopped
+    env_file:
+      - .env
+    depends_on:
+      db:
+        condition: service_healthy
+    expose:
+      - "8000"
+
+  exception-worker:
+    <<: *exception-runtime
+    build:
+      context: ./backend
+    restart: unless-stopped
+    stop_grace_period: 180s
+    command: ["python", "-m", "app.tasks.exception_worker"]
+    user: "65532:65532"
+    working_dir: /var/lib/exception-worker
     environment:
-      POSTGRES_DB: inventory_demo
-      POSTGRES_USER: portfolio_demo
-      POSTGRES_PASSWORD: local-demo-only
-    ports:
-      - "127.0.0.1:25435:5432"
+      <<: *exception-common-environment
+      HERMES_API_BASE_URL: ""
+      HERMES_API_KEY: ""
     tmpfs:
-      - /var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U portfolio_demo -d inventory_demo"]
-      interval: 2s
-      timeout: 3s
-      retries: 30
-  api:
-    profiles: ["app"]
-    image: portfolio-inventory-showcase:${SHOWCASE_IMAGE_TAG:-stage3}
+      - /tmp:rw,noexec,nosuid,nodev,size=64m,uid=65532,gid=65532,mode=0700
+      - /var/lib/exception-worker:rw,noexec,nosuid,nodev,size=16m,uid=65532,gid=65532,mode=0700
+    depends_on:
+      db:
+        condition: service_healthy
+
+  exception-ai-worker:
+    <<: *exception-runtime
     build:
-      context: .
-      dockerfile: backend/Dockerfile
+      context: ./backend
+    restart: unless-stopped
+    stop_grace_period: 180s
+    command: ["python", "-m", "app.tasks.exception_ai_worker"]
+    user: "65533:65533"
+    working_dir: /var/lib/exception-ai-worker
     environment:
-      DATABASE_URL: postgresql+psycopg://portfolio_demo:local-demo-only@postgres:5432/inventory_demo
-    command: ["sh", "-c", "alembic upgrade head && python -m demo.seed && uvicorn app.main:app --host 0.0.0.0 --port 8000"]
+      <<: *exception-common-environment
+      HERMES_API_BASE_URL: ${HERMES_API_BASE_URL:-}
+      HERMES_API_KEY: ${HERMES_API_KEY:-}
+      HERMES_MODEL: ${HERMES_MODEL:-glm-5.1}
+      HERMES_REQUEST_TIMEOUT_SECONDS: ${HERMES_REQUEST_TIMEOUT_SECONDS:-120}
+      EXCEPTION_MANUAL_AI_REQUIRE_PROVIDER_USAGE: ${EXCEPTION_MANUAL_AI_REQUIRE_PROVIDER_USAGE:-true}
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,nodev,size=64m,uid=65533,gid=65533,mode=0700
+      - /var/lib/exception-ai-worker:rw,noexec,nosuid,nodev,size=16m,uid=65533,gid=65533,mode=0700
+    depends_on:
+      db:
+        condition: service_healthy
+
+  exception-scheduler:
+    <<: *exception-runtime
+    build:
+      context: ./backend
+    restart: unless-stopped
+    stop_grace_period: 30s
+    command: ["python", "-m", "app.tasks.exception_scheduler"]
+    user: "65534:65534"
+    working_dir: /var/lib/exception-scheduler
+    environment:
+      <<: *exception-common-environment
+      HERMES_API_BASE_URL: ""
+      HERMES_API_KEY: ""
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,nodev,size=64m,uid=65534,gid=65534,mode=0700
+      - /var/lib/exception-scheduler:rw,noexec,nosuid,nodev,size=16m,uid=65534,gid=65534,mode=0700
+    depends_on:
+      db:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        VITE_EXCEPTION_CENTER_ENABLED: ${VITE_EXCEPTION_CENTER_ENABLED:-false}
+    restart: unless-stopped
+    depends_on:
+      - backend
     ports:
-      - "127.0.0.1:18130:8000"
-    depends_on:
-      postgres:
-        condition: service_healthy
-    healthcheck:
-      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=3)"]
-      interval: 2s
-      timeout: 3s
-      retries: 60
-  worker:
-    profiles: ["app"]
-    image: portfolio-inventory-worker:${SHOWCASE_IMAGE_TAG:-stage3}
-    build:
-      context: .
-      dockerfile: backend/Dockerfile
-    environment:
-      DATABASE_URL: postgresql+psycopg://portfolio_demo:local-demo-only@postgres:5432/inventory_demo
-    command: ["python", "-m", "app.tasks.exception_ai_worker", "--worker-id", "demo-worker"]
-    depends_on:
-      api:
-        condition: service_healthy
-  seed:
-    profiles: ["tools"]
-    build:
-      context: .
-      dockerfile: backend/Dockerfile
-    environment:
-      ENVIRONMENT: demo
-      DATABASE_URL: postgresql+psycopg://portfolio_demo:local-demo-only@postgres:5432/inventory_demo
-      AI_MODE: mock
-    command: ["sh", "-c", "alembic upgrade head && python -m demo.seed"]
-    depends_on:
-      postgres:
-        condition: service_healthy
+      - "${APP_PORT:-80}:80"
+
 volumes:
-  demo_postgres:
+  postgres_data:

@@ -1,8 +1,10 @@
+> Historical dependency inventory for v0.1.0-showcase. The current full application inventory is [here](docs/dependency-licenses-full.json), with [additional notices](docs/third-party-notices-full.md).
+
 # Third-party notices
 
 Dependencies retain their upstream licenses. This candidate does not relicense them or the original application code. Install environments, node_modules and built bundles are excluded from Git.
 
-The reviewed installation is indexed in [dependency-licenses.json](docs/dependency-licenses.json). It includes version, declared license metadata and SHA-256 of available installed license files. npm optional platform packages can be listed in the lock without being installed on this machine. Actual Python license texts remain in their installed dist-info directories; installed npm license files remain with their packages.
+The reviewed installation is indexed in [dependency-licenses.json](docs/dependency-licenses-full.json). It includes version, declared license metadata and SHA-256 of available installed license files. npm optional platform packages can be listed in the lock without being installed on this machine. Actual Python license texts remain in their installed dist-info directories; installed npm license files remain with their packages.
 
 If distributing a built image, bundle, or dependency source later, include the applicable upstream license and attribution files with that artifact. The current deliverable is repository source, with no dependency binaries archived into it. Container image versions and content digests are recorded separately in the local acceptance report; image use is not a new license grant.
 

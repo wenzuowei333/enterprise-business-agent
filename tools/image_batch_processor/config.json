@@ -1,0 +1,40 @@
+{
+  "input_dir": "input",
+  "output_dir": "output",
+  "watermark_dir": "watermarks",
+  "output_width": 800,
+  "output_height": 800,
+  "background_color": [255, 255, 255],
+  "transparent_background": false,
+  "output_format": "jpg",
+  "jpeg_quality": 95,
+  "margin_ratio": 0.08,
+  "keep_aspect_ratio": true,
+  "auto_crop_subject": true,
+  "output_suffix": "_result",
+  "log_path": "logs/process.log",
+  "rembg_model": "u2netp",
+  "post_process_mask": true,
+  "alpha_matting": false,
+  "alpha_matting_foreground_threshold": 240,
+  "alpha_matting_background_threshold": 10,
+  "alpha_matting_erode_size": 10,
+  "watermarks": [
+    {
+      "enabled": true,
+      "path": "watermarks/main_watermark.png",
+      "position": "tile",
+      "scale_ratio": 0.18,
+      "opacity": 0.55,
+      "margin": 80
+    },
+    {
+      "enabled": false,
+      "path": "watermarks/detail_template_watermark.png",
+      "position": "tile",
+      "scale_ratio": 0.28,
+      "opacity": 0.12,
+      "margin": 120
+    }
+  ]
+}

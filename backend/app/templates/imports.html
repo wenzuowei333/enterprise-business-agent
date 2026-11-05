@@ -1,0 +1,112 @@
+{% extends "layout.html" %}
+{% block content %}
+<section class="section import-hero">
+  <div class="section-header">
+    <div>
+      <p class="eyebrow">IMPORT CENTER</p>
+      <h1>文件导入</h1>
+      <div class="muted">员工、客户、商品、供应商四类主数据在这里上传、校验、提交。批次和错误记录独立沉淀。</div>
+    </div>
+    <div class="actions">
+      <a class="button secondary" href="/master-data">查看主数据</a>
+      <a class="button secondary" href="/dashboard">返回底座状态</a>
+    </div>
+  </div>
+</section>
+
+<section class="section page-grid">
+  <article class="panel import-panel">
+    <div class="panel-heading">
+      <div>
+        <h2>上传新批次</h2>
+        <p id="import-state" class="muted">等待文件</p>
+      </div>
+      <span class="view-chip">CSV / XLS / XLSX</span>
+    </div>
+    <div class="form-row">
+      <label>
+        类型
+        <select id="import-file-type">
+          <option value="employee_profile">员工档案</option>
+          <option value="customer_master">客户档案</option>
+          <option value="product_master">商品档案</option>
+          <option value="supplier_master">供应商档案</option>
+        </select>
+      </label>
+      <label>
+        数据日期
+        <input id="import-data-date" type="date">
+      </label>
+    </div>
+    <label class="file-field">
+      文件
+      <input id="import-file" accept=".csv,.xls,.xlsx" type="file">
+    </label>
+    <div class="button-row">
+      <button id="upload-button" type="button">上传</button>
+      <button id="validate-button" class="secondary" type="button" disabled>校验</button>
+      <button id="commit-button" class="secondary" type="button" disabled>提交</button>
+    </div>
+    <pre id="batch-preview" class="preview-box">尚无批次</pre>
+  </article>
+
+  <article class="panel">
+    <div class="panel-heading">
+      <div>
+        <h2>导入口径</h2>
+        <p class="muted">导入框架维护管理中心主数据，按批次完成校验、提交和追溯。</p>
+      </div>
+    </div>
+    <div class="rule-list">
+      <div><span>字段识别</span><strong>按别名映射表自动识别常见列名</strong></div>
+      <div><span>数据校验</span><strong>先落批次，再校验主键、必填和重复</strong></div>
+      <div><span>正式提交</span><strong>校验通过后写入主数据表和别名表</strong></div>
+      <div><span>审计追溯</span><strong>上传人、批次、原始文件和错误行独立记录</strong></div>
+    </div>
+  </article>
+</section>
+
+<section class="section panel">
+  <div class="panel-heading">
+    <div>
+      <h2>最近导入批次</h2>
+      <p class="muted">上传、校验和提交后会自动刷新。</p>
+    </div>
+    <button id="reload-batches-button" class="secondary compact" type="button">重载</button>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>批次号</th>
+          <th>类型</th>
+          <th>状态</th>
+          <th>行数</th>
+          <th>成功</th>
+          <th>错误</th>
+        </tr>
+      </thead>
+      <tbody id="batch-table">
+        {% for batch in batches %}
+        <tr>
+          <td>{{ batch.id }}</td>
+          <td>{{ batch.batch_no }}</td>
+          <td>{{ batch.file_type }}</td>
+          <td><span class="badge {{ 'ok' if batch.status == 'committed' else 'warn' }}">{{ batch.status }}</span></td>
+          <td>{{ batch.total_rows }}</td>
+          <td>{{ batch.success_rows }}</td>
+          <td>{{ batch.error_rows }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="7" class="muted">暂无导入批次。</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/imports.js?v=20260624-multipage"></script>
+{% endblock %}

@@ -1,0 +1,59 @@
+[Unit]
+Description=Handmade ERP Exception Observer Scalar Metrics Collector
+After=network-online.target postgresql.service enterprise-business-agent.service enterprise-business-agent-exception-worker.service enterprise-business-agent-exception-ai-worker.service enterprise-business-agent-exception-scheduler.service
+Wants=network-online.target
+Before=enterprise-business-agent-exception-observer.service
+
+[Service]
+Type=oneshot
+User=root
+Group=handmade-exception-observer
+SupplementaryGroups=systemd-journal handmade-exception-code
+RuntimeDirectory=enterprise-business-agent-exception-observer-metrics
+RuntimeDirectoryMode=0750
+RuntimeDirectoryPreserve=yes
+WorkingDirectory=/run/enterprise-business-agent-exception-observer-metrics
+Environment=APP_ROOT=/opt/enterprise-business-agent
+Environment=OBSERVATION_FILE=/var/lib/enterprise-business-agent-exception-release/dark-observation.json
+Environment=OBSERVATION_METRICS_FILE=/run/enterprise-business-agent-exception-observer-metrics/latest.json
+Environment=PYTHONPATH=/opt/enterprise-business-agent/backend
+EnvironmentFile=/etc/enterprise-business-agent/exception-observer-metrics.env
+EnvironmentFile=/opt/enterprise-business-agent/deploy/exception-non-ai.env
+ExecStart=/usr/bin/bash /opt/enterprise-business-agent/deploy/collect-exception-stage3-observation-metrics.sh
+NoNewPrivileges=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectHostname=true
+ProtectClock=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+ProtectKernelLogs=true
+ProtectProc=invisible
+ProcSubset=pid
+RestrictSUIDSGID=true
+RestrictNamespaces=true
+LockPersonality=true
+CapabilityBoundingSet=
+AmbientCapabilities=
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+IPAddressDeny=any
+IPAddressAllow=localhost
+ReadOnlyPaths=/opt/enterprise-business-agent
+ReadWritePaths=/run/enterprise-business-agent-exception-observer-metrics
+InaccessiblePaths=/opt/enterprise-business-agent/.env
+InaccessiblePaths=-/opt/enterprise-business-agent/runtime
+InaccessiblePaths=-/opt/enterprise-business-agent/uploads
+InaccessiblePaths=-/opt/enterprise-business-agent/attachments
+InaccessiblePaths=-/opt/enterprise-business-agent/reports
+InaccessiblePaths=-/opt/enterprise-business-agent/backups
+InaccessiblePaths=-/opt/enterprise-business-agent/output
+InaccessiblePaths=-/opt/enterprise-business-agent/outputs
+InaccessiblePaths=-/opt/enterprise-business-agent/.git
+InaccessiblePaths=-/opt/enterprise-business-agent/.codex-remote-attachments
+UMask=0077
+MemoryMax=256M
+CPUQuota=50%
+TasksMax=32

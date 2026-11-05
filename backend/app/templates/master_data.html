@@ -1,0 +1,76 @@
+{% extends "layout.html" %}
+{% block content %}
+<section class="section data-hero">
+  <div class="section-header">
+    <div>
+      <p class="eyebrow">MASTER DATA</p>
+      <h1>主数据中心</h1>
+      <div class="muted">这里承载员工、客户、商品和供应商档案。新增和批量更新先走文件导入页，查询和核对在这里完成。</div>
+    </div>
+    <div class="actions">
+      {% if user.role in ["admin", "data_middle_office"] %}<a class="button" href="/imports">上传文件</a>{% endif %}
+      <a class="button secondary" href="/dashboard">底座状态</a>
+    </div>
+  </div>
+
+  <div class="data-kpi-grid">
+    <a class="data-kpi" href="/master-data?kind=employees"><span>员工档案</span><strong>{{ stats.employees }}</strong><small>身份与组织</small></a>
+    <a class="data-kpi" href="/master-data?kind=customers"><span>客户档案</span><strong>{{ stats.customers }}</strong><small>客户编号唯一</small></a>
+    <a class="data-kpi" href="/master-data?kind=products"><span>商品档案</span><strong>{{ stats.products }}</strong><small>商品编号唯一</small></a>
+    <a class="data-kpi" href="/master-data?kind=suppliers"><span>供应商档案</span><strong>{{ stats.suppliers }}</strong><small>供应商编号唯一</small></a>
+  </div>
+</section>
+
+<section class="section data-tabs-row">
+  <div class="tabs">
+    {% for key, item in kinds.items() %}
+    <a class="tab {% if kind == key %}active{% endif %}" href="/master-data?kind={{ key }}">{{ item.label }}</a>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="section object-view-toolbar">
+  <div class="object-view-title">
+    <span>{{ active_config.label }}</span>
+    <small>{{ rows|length }} 条记录</small>
+  </div>
+  <form class="inline-search" method="get" action="/master-data">
+    <input type="hidden" name="kind" value="{{ kind }}">
+    <input type="search" name="q" value="{{ q }}" placeholder="搜索编号或名称">
+    <button class="secondary compact" type="submit">搜索</button>
+    {% if q %}<a class="button secondary compact" href="/master-data?kind={{ kind }}">清空</a>{% endif %}
+  </form>
+</section>
+
+<section class="section panel">
+  <div class="panel-heading">
+    <div>
+      <h2>{{ active_config.label }}</h2>
+      <p class="muted">按当前筛选展示基础档案，支持搜索、导入和权限控制。</p>
+    </div>
+    <span class="view-chip">表格视图</span>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          {% for column in active_config.columns %}
+          <th>{{ column }}</th>
+          {% endfor %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in rows %}
+        <tr>
+          {% for column in active_config.columns %}
+          <td>{{ row[column] or "-" }}</td>
+          {% endfor %}
+        </tr>
+        {% else %}
+        <tr><td colspan="{{ active_config.columns|length }}" class="muted">暂无记录。</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}
